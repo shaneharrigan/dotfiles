@@ -5,6 +5,7 @@ A powerful, feature-rich Neovim configuration optimized for Go and Java developm
 ## 🚀 Features
 
 ### Core Features
+
 - **Language Support**: Full LSP support for Go, Java, and Lua
 - **Debugging**: DAP (Debug Adapter Protocol) with UI for Go and Java
 - **Testing**: Integrated test runners with neotest
@@ -17,6 +18,7 @@ A powerful, feature-rich Neovim configuration optimized for Go and Java developm
 - **Which-Key**: Interactive keybinding helper
 
 ### Go-Specific Features
+
 - gopls with full configuration (inlay hints, codelenses, etc.)
 - Auto-import and formatting with goimports/gofumpt
 - Struct tag management
@@ -26,6 +28,7 @@ A powerful, feature-rich Neovim configuration optimized for Go and Java developm
 - Delve debugger integration
 
 ### Java-Specific Features
+
 - Eclipse JDT Language Server (jdtls)
 - Maven & Gradle support
 - Code generation (toString, getters/setters, etc.)
@@ -39,11 +42,13 @@ A powerful, feature-rich Neovim configuration optimized for Go and Java developm
 ### Prerequisites
 
 1. **Neovim >= 0.9.0**
+
    ```bash
    brew install neovim
    ```
 
 2. **Required system dependencies**
+
    ```bash
    # macOS
    brew install git ripgrep fd lazygit
@@ -62,6 +67,7 @@ A powerful, feature-rich Neovim configuration optimized for Go and Java developm
 Your configuration is already in place at `~/.config/nvim`. To activate it:
 
 1. Open Neovim:
+
    ```bash
    nvim
    ```
@@ -78,135 +84,135 @@ Leader key: `<Space>`
 
 ### General
 
-| Key | Description |
-|-----|-------------|
-| `<leader>w` | Save file |
-| `<leader>qq` | Quit all |
-| `<leader>bd` | Delete buffer |
-| `<S-h>` | Previous buffer |
-| `<S-l>` | Next buffer |
-| `<Esc>` | Clear search highlight |
-| `jk` | Exit insert mode |
+| Key               | Description               |
+| ----------------- | ------------------------- |
+| `<leader>w`       | Save file                 |
+| `<leader>qq`      | Quit all                  |
+| `<leader>bd`      | Delete buffer             |
+| `<S-h>`           | Previous buffer           |
+| `<S-l>`           | Next buffer               |
+| `<Esc>`           | Clear search highlight    |
+| `jk`              | Exit insert mode          |
 | `<C-d>` / `<C-u>` | Scroll down/up (centered) |
-| `<C-h/j/k/l>` | Navigate windows |
+| `<C-h/j/k/l>`     | Navigate windows          |
 
 ### File Explorer (nvim-tree)
 
-| Key | Description |
-|-----|-------------|
+| Key         | Description          |
+| ----------- | -------------------- |
 | `<leader>e` | Toggle file explorer |
-| `<leader>E` | Focus file explorer |
+| `<leader>E` | Focus file explorer  |
 
 ### Telescope (Fuzzy Finder)
 
-| Key | Description |
-|-----|-------------|
-| `<leader>ff` | Find files |
+| Key          | Description             |
+| ------------ | ----------------------- |
+| `<leader>ff` | Find files              |
 | `<leader>fg` | Live grep (search text) |
-| `<leader>fb` | Find buffers |
-| `<leader>fh` | Help tags |
-| `<leader>fr` | Recent files |
-| `<leader>fs` | Document symbols |
-| `<leader>fS` | Workspace symbols |
+| `<leader>fb` | Find buffers            |
+| `<leader>fh` | Help tags               |
+| `<leader>fr` | Recent files            |
+| `<leader>fs` | Document symbols        |
+| `<leader>fS` | Workspace symbols       |
 
 ### LSP
 
-| Key | Description |
-|-----|-------------|
-| `gd` | Go to definition |
-| `gD` | Go to declaration |
-| `gr` | References |
-| `gi` | Go to implementation |
-| `gt` | Type definition |
-| `K` | Hover documentation |
-| `<C-k>` | Signature help |
-| `<leader>rn` | Rename symbol |
+| Key          | Description                 |
+| ------------ | --------------------------- |
+| `gd`         | Go to definition            |
+| `gD`         | Go to declaration           |
+| `gr`         | References                  |
+| `gi`         | Go to implementation        |
+| `gt`         | Type definition             |
+| `K`          | Hover documentation         |
+| `<C-k>`      | Signature help              |
+| `<leader>rn` | Rename symbol               |
 | `<leader>ca` | Code actions (with preview) |
-| `<leader>f` | Format buffer |
-| `[d` / `]d` | Previous/next diagnostic |
-| `<leader>d` | Show line diagnostics |
+| `<leader>f`  | Format buffer               |
+| `[d` / `]d`  | Previous/next diagnostic    |
+| `<leader>d`  | Show line diagnostics       |
 
 ### Debugging (DAP)
 
-| Key | Description |
-|-----|-------------|
-| `<leader>db` | Toggle breakpoint |
+| Key          | Description            |
+| ------------ | ---------------------- |
+| `<leader>db` | Toggle breakpoint      |
 | `<leader>dB` | Conditional breakpoint |
-| `<leader>dc` | Continue |
-| `<leader>dC` | Run to cursor |
-| `<leader>di` | Step into |
-| `<leader>do` | Step over |
-| `<leader>dO` | Step out |
-| `<leader>dr` | Toggle REPL |
-| `<leader>dt` | Toggle DAP UI |
-| `<leader>dx` | Terminate |
-| `<leader>dh` | Hover (debug) |
+| `<leader>dc` | Continue               |
+| `<leader>dC` | Run to cursor          |
+| `<leader>di` | Step into              |
+| `<leader>do` | Step over              |
+| `<leader>dO` | Step out               |
+| `<leader>dr` | Toggle REPL            |
+| `<leader>dt` | Toggle DAP UI          |
+| `<leader>dx` | Terminate              |
+| `<leader>dh` | Hover (debug)          |
 
 ### Testing (Neotest)
 
-| Key | Description |
-|-----|-------------|
-| `<leader>tt` | Test nearest |
-| `<leader>tf` | Test file |
+| Key          | Description         |
+| ------------ | ------------------- |
+| `<leader>tt` | Test nearest        |
+| `<leader>tf` | Test file           |
 | `<leader>ts` | Toggle test summary |
-| `<leader>to` | Test output |
-| `<leader>tO` | Test output panel |
-| `<leader>tS` | Stop test |
+| `<leader>to` | Test output         |
+| `<leader>tO` | Test output panel   |
+| `<leader>tS` | Stop test           |
 
 ### Git
 
-| Key | Description |
-|-----|-------------|
-| `<leader>gg` | LazyGit |
-| `<leader>gb` | Git branches |
-| `<leader>gc` | Git commits |
-| `<leader>gs` | Git status |
-| `]c` / `[c` | Next/previous hunk |
-| `<leader>hs` | Stage hunk |
-| `<leader>hr` | Reset hunk |
-| `<leader>hp` | Preview hunk |
-| `<leader>hb` | Blame line |
+| Key          | Description        |
+| ------------ | ------------------ |
+| `<leader>gg` | LazyGit            |
+| `<leader>gb` | Git branches       |
+| `<leader>gc` | Git commits        |
+| `<leader>gs` | Git status         |
+| `]c` / `[c`  | Next/previous hunk |
+| `<leader>hs` | Stage hunk         |
+| `<leader>hr` | Reset hunk         |
+| `<leader>hp` | Preview hunk       |
+| `<leader>hb` | Blame line         |
 
 ### Go-Specific
 
-| Key | Description |
-|-----|-------------|
-| `<leader>gf` | Fill struct |
-| `<leader>ge` | Generate if err |
-| `<leader>gt` | Add struct tags |
-| `<leader>gT` | Remove struct tags |
+| Key          | Description         |
+| ------------ | ------------------- |
+| `<leader>gf` | Fill struct         |
+| `<leader>ge` | Generate if err     |
+| `<leader>gt` | Add struct tags     |
+| `<leader>gT` | Remove struct tags  |
 | `<leader>gi` | Implement interface |
-| `<leader>gm` | Go mod tidy |
+| `<leader>gm` | Go mod tidy         |
 
 ### Java-Specific
 
-| Key | Description |
-|-----|-------------|
-| `<leader>co` | Organize imports |
-| `<leader>cv` | Extract variable |
-| `<leader>cc` | Extract constant |
+| Key          | Description                  |
+| ------------ | ---------------------------- |
+| `<leader>co` | Organize imports             |
+| `<leader>cv` | Extract variable             |
+| `<leader>cc` | Extract constant             |
 | `<leader>cm` | Extract method (visual mode) |
-| `<leader>ct` | Test method |
-| `<leader>cT` | Test class |
+| `<leader>ct` | Test method                  |
+| `<leader>cT` | Test class                   |
 
 ### Trouble (Diagnostics)
 
-| Key | Description |
-|-----|-------------|
+| Key          | Description        |
+| ------------ | ------------------ |
 | `<leader>xx` | Toggle diagnostics |
 | `<leader>xX` | Buffer diagnostics |
-| `<leader>xl` | Location list |
-| `<leader>xq` | Quickfix list |
+| `<leader>xl` | Location list      |
+| `<leader>xq` | Quickfix list      |
 
 ### Treesitter Text Objects
 
-| Key | Description |
-|-----|-------------|
-| `af` / `if` | Around/inside function |
-| `ac` / `ic` | Around/inside class |
-| `aa` / `ia` | Around/inside parameter |
+| Key         | Description                  |
+| ----------- | ---------------------------- |
+| `af` / `if` | Around/inside function       |
+| `ac` / `ic` | Around/inside class          |
+| `aa` / `ia` | Around/inside parameter      |
 | `]m` / `[m` | Next/previous function start |
-| `]]` / `[[` | Next/previous class start |
+| `]]` / `[[` | Next/previous class start    |
 
 ## 📁 Structure
 
@@ -234,6 +240,7 @@ Leader key: `<Space>`
 ### Language Servers
 
 Automatically installed via Mason:
+
 - **gopls**: Go
 - **jdtls**: Java
 - **lua_ls**: Lua
@@ -266,6 +273,7 @@ To switch themes, edit [lua/plugins/theme.lua](lua/plugins/theme.lua) and set `e
 ### Adding a New Language
 
 1. Add the LSP server to [lua/plugins/mason.lua](lua/plugins/mason.lua):
+
    ```lua
    ensure_installed = {
      "your-lsp-server",
@@ -274,6 +282,7 @@ To switch themes, edit [lua/plugins/theme.lua](lua/plugins/theme.lua) and set `e
    ```
 
 2. Configure the LSP in [lua/plugins/nvm-lspconfig.lua](lua/plugins/nvm-lspconfig.lua):
+
    ```lua
    lspconfig.your_lsp.setup({
      capabilities = capabilities,
@@ -291,11 +300,13 @@ Edit [lua/config/keymaps.lua](lua/config/keymaps.lua) for global keymaps, or the
 ### LSP not working
 
 1. Check if the language server is installed:
+
    ```vim
    :Mason
    ```
 
 2. Check LSP status:
+
    ```vim
    :LspInfo
    ```
@@ -308,6 +319,7 @@ Edit [lua/config/keymaps.lua](lua/config/keymaps.lua) for global keymaps, or the
 ### Java LSP not starting
 
 1. Ensure Java 17+ is installed:
+
    ```bash
    java --version
    ```
@@ -320,6 +332,7 @@ Edit [lua/config/keymaps.lua](lua/config/keymaps.lua) for global keymaps, or the
 ### Go tools not working
 
 1. Ensure Go is installed:
+
    ```bash
    go version
    ```

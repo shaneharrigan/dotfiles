@@ -89,6 +89,9 @@ vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 -- Show which line your cursor is on
 vim.opt.cursorline = true
 
+-- Make clipboard universal
+vim.opt.clipboard:append("unnamedplus")
+
 ------------------------------------------------------------------
 -- Setup lazy.nvim
 ------------------------------------------------------------------

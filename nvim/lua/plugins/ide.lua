@@ -181,8 +181,11 @@ return {
     config = function()
       require("conform").setup({
         formatters_by_ft = {
-          go = { "gofumpt", "goimports" },
+          go = { "gofumpt" }, -- goimports removed to prevent auto-removal of unused imports
           java = { "google-java-format" },
+          c = { "clang_format" },
+          cpp = { "clang_format" },
+          rust = { "rustfmt" },
           lua = { "stylua" },
           json = { "prettier" },
           yaml = { "prettier" },
@@ -210,6 +213,8 @@ return {
       lint.linters_by_ft = {
         go = { "golangcilint" },
         java = { "checkstyle" },
+        c = { "cppcheck" },
+        cpp = { "cppcheck" },
       }
       
       -- Auto-lint on save and on text changed
@@ -326,10 +331,10 @@ return {
       -- Register which-key groups
       wk.add({
         { "<leader>b", group = "Buffer" },
-        { "<leader>c", group = "Code" },
+        { "<leader>c", group = "Code/CMake/C++" },
         { "<leader>d", group = "Debug" },
         { "<leader>f", group = "Find" },
-        { "<leader>g", group = "Git" },
+        { "<leader>g", group = "Git/Go" },
         { "<leader>h", group = "Hunk" },
         { "<leader>l", group = "LSP" },
         { "<leader>q", group = "Quit" },

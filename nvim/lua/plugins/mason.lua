@@ -20,9 +20,11 @@ return {
     config = function()
       require("mason-lspconfig").setup({
         ensure_installed = {
-          "gopls",      -- Go
-          "jdtls",      -- Java
-          "lua_ls",     -- Lua
+          "gopls",         -- Go
+          "jdtls",         -- Java
+          "clangd",        -- C/C++
+          "rust_analyzer", -- Rust
+          "lua_ls",        -- Lua
         },
         automatic_installation = true,
       })
@@ -46,6 +48,15 @@ return {
           "jdtls",
           "java-debug-adapter",
           "java-test",
+          
+          -- C/C++ tools
+          "clangd",
+          "clang-format",
+          "codelldb",        -- C/C++/Rust debugger
+          
+          -- Rust tools
+          "rust-analyzer",
+          "rustfmt",
           
           -- Formatters
           "stylua",

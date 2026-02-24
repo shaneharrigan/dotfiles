@@ -18,6 +18,9 @@ return {
         ensure_installed = {
           "go",
           "java",
+          "c",
+          "cpp",
+          "rust",
           "lua",
           "vim",
           "vimdoc",

@@ -6,7 +6,7 @@ return {
     config = function()
       require("tokyonight").setup({
         style = "night",
-        transparent = false,
+        transparent = true,
         terminal_colors = true,
         styles = {
           comments = { italic = true },
@@ -37,7 +37,7 @@ return {
     config = function()
       require("catppuccin").setup({
         flavour = "mocha",
-        transparent_background = false,
+        transparent_background = true,
         term_colors = true,
         integrations = {
           cmp = true,
