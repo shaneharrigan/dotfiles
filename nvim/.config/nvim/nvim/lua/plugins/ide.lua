@@ -191,7 +191,10 @@ return {
           yaml = { "prettier" },
           markdown = { "prettier" },
           javascript = { "prettier" },
+          javascriptreact = { "prettier" },
           typescript = { "prettier" },
+          typescriptreact = { "prettier" },
+          python = { "isort", "black" },
         },
         format_on_save = {
           timeout_ms = 1000,
@@ -215,6 +218,11 @@ return {
         java = { "checkstyle" },
         c = { "cppcheck" },
         cpp = { "cppcheck" },
+        javascript = { "eslint_d" },
+        javascriptreact = { "eslint_d" },
+        typescript = { "eslint_d" },
+        typescriptreact = { "eslint_d" },
+        python = { "ruff" },
       }
       
       -- Auto-lint on save and on text changed
@@ -331,7 +339,7 @@ return {
       -- Register which-key groups
       wk.add({
         { "<leader>b", group = "Buffer" },
-        { "<leader>c", group = "Code/CMake/C++" },
+        { "<leader>c", group = "Code" },
         { "<leader>d", group = "Debug" },
         { "<leader>f", group = "Find" },
         { "<leader>g", group = "Git/Go" },

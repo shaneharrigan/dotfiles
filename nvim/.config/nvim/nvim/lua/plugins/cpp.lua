@@ -141,16 +141,17 @@ return {
       -- CMake keymaps
       vim.api.nvim_create_autocmd("FileType", {
         pattern = { "c", "cpp", "cmake" },
-        callback = function()
-          vim.keymap.set("n", "<leader>cg", "<cmd>CMakeGenerate<cr>", { desc = "CMake Generate" })
-          vim.keymap.set("n", "<leader>cb", "<cmd>CMakeBuild<cr>", { desc = "CMake Build" })
-          vim.keymap.set("n", "<leader>cr", "<cmd>CMakeRun<cr>", { desc = "CMake Run" })
-          vim.keymap.set("n", "<leader>cd", "<cmd>CMakeDebug<cr>", { desc = "CMake Debug" })
-          vim.keymap.set("n", "<leader>cy", "<cmd>CMakeSelectBuildType<cr>", { desc = "CMake Select Build Type" })
-          vim.keymap.set("n", "<leader>ct", "<cmd>CMakeSelectBuildTarget<cr>", { desc = "CMake Select Target" })
-          vim.keymap.set("n", "<leader>cl", "<cmd>CMakeSelectLaunchTarget<cr>", { desc = "CMake Select Launch Target" })
-          vim.keymap.set("n", "<leader>cC", "<cmd>CMakeClean<cr>", { desc = "CMake Clean" })
-          vim.keymap.set("n", "<leader>cS", "<cmd>CMakeStop<cr>", { desc = "CMake Stop" })
+        callback = function(args)
+          local buf = args.buf
+          vim.keymap.set("n", "<leader>cg", "<cmd>CMakeGenerate<cr>", { desc = "CMake Generate", buffer = buf })
+          vim.keymap.set("n", "<leader>cb", "<cmd>CMakeBuild<cr>", { desc = "CMake Build", buffer = buf })
+          vim.keymap.set("n", "<leader>cr", "<cmd>CMakeRun<cr>", { desc = "CMake Run", buffer = buf })
+          vim.keymap.set("n", "<leader>cd", "<cmd>CMakeDebug<cr>", { desc = "CMake Debug", buffer = buf })
+          vim.keymap.set("n", "<leader>cy", "<cmd>CMakeSelectBuildType<cr>", { desc = "CMake Select Build Type", buffer = buf })
+          vim.keymap.set("n", "<leader>ct", "<cmd>CMakeSelectBuildTarget<cr>", { desc = "CMake Select Target", buffer = buf })
+          vim.keymap.set("n", "<leader>cl", "<cmd>CMakeSelectLaunchTarget<cr>", { desc = "CMake Select Launch Target", buffer = buf })
+          vim.keymap.set("n", "<leader>cC", "<cmd>CMakeClean<cr>", { desc = "CMake Clean", buffer = buf })
+          vim.keymap.set("n", "<leader>cS", "<cmd>CMakeStop<cr>", { desc = "CMake Stop", buffer = buf })
         end,
       })
     end,

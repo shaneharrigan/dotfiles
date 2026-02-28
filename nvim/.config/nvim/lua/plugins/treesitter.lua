@@ -35,6 +35,8 @@ return {
           "css",
           "javascript",
           "typescript",
+          "tsx",
+          "python",
         },
         sync_install = false,
         auto_install = true,

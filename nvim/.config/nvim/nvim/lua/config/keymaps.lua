@@ -30,6 +30,44 @@ vim.keymap.set("v", "p", '"_dP', { desc = "Paste without yanking" })
 -- Clear search highlighting
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>", { desc = "Clear highlights" })
 
+-- Hover docs (prevent fallback to :Man when LSP is not attached)
+vim.keymap.set("n", "K", function()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local clients = vim.lsp.get_clients({ bufnr = bufnr })
+  if clients and #clients > 0 then
+    vim.lsp.buf.hover()
+    return
+  end
+
+  local ft = vim.bo[bufnr].filetype
+  local candidates_by_ft = {
+    javascript = { "ts_ls", "tsserver" },
+    javascriptreact = { "ts_ls", "tsserver" },
+    typescript = { "ts_ls", "tsserver" },
+    typescriptreact = { "ts_ls", "tsserver" },
+    html = { "html" },
+    python = { "pyright" },
+    go = { "gopls" },
+    lua = { "lua_ls" },
+    c = { "clangd" },
+    cpp = { "clangd" },
+  }
+
+  local candidates = candidates_by_ft[ft] or {}
+  for _, server in ipairs(candidates) do
+    pcall(vim.cmd, "silent! LspStart " .. server)
+  end
+
+  vim.defer_fn(function()
+    local retry_clients = vim.lsp.get_clients({ bufnr = bufnr })
+    if retry_clients and #retry_clients > 0 then
+      vim.lsp.buf.hover()
+    else
+      vim.notify("No LSP hover available for this buffer", vim.log.levels.WARN)
+    end
+  end, 250)
+end, { desc = "Hover Documentation" })
+
 -- Window navigation
 vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "Go to left window" })
 vim.keymap.set("n", "<C-j>", "<C-w>j", { desc = "Go to lower window" })

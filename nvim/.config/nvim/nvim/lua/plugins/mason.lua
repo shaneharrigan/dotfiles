@@ -22,6 +22,9 @@ return {
         ensure_installed = {
           "gopls",         -- Go
           "jdtls",         -- Java
+          "ts_ls",         -- TypeScript/React
+          "pyright",       -- Python
+          "html",          -- HTML
           "clangd",        -- C/C++
           "rust_analyzer", -- Rust
           "lua_ls",        -- Lua
@@ -48,6 +51,16 @@ return {
           "jdtls",
           "java-debug-adapter",
           "java-test",
+
+          -- React/TypeScript tools
+          "typescript-language-server",
+          "eslint_d",
+
+          -- Python tools
+          "pyright",
+          "ruff",
+          "black",
+          "isort",
           
           -- C/C++ tools
           "clangd",
