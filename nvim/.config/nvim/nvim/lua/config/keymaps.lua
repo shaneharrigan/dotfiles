@@ -61,6 +61,12 @@ vim.keymap.set("n", "<leader>E", "<cmd>NvimTreeFocus<cr>", { desc = "Focus Explo
 -- Telescope
 vim.keymap.set("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { desc = "Find Files" })
 vim.keymap.set("n", "<leader>fg", "<cmd>Telescope live_grep<cr>", { desc = "Live Grep" })
+vim.keymap.set("n", "<leader>fd", function()
+  require("telescope.builtin").live_grep({
+    search_dirs = { vim.fn.expand("%:p:h") },
+    prompt_title = "Grep in " .. vim.fn.fnamemodify(vim.fn.expand("%:p:h"), ":~:.")
+  })
+end, { desc = "Grep in Current Dir" })
 vim.keymap.set("n", "<leader>fb", "<cmd>Telescope buffers<cr>", { desc = "Buffers" })
 vim.keymap.set("n", "<leader>fh", "<cmd>Telescope help_tags<cr>", { desc = "Help Tags" })
 vim.keymap.set("n", "<leader>fr", "<cmd>Telescope oldfiles<cr>", { desc = "Recent Files" })
