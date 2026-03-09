@@ -52,15 +52,9 @@ end
 -- Replace current visual selection throughout the whole buffer
 vim.keymap.set("x", "<leader>sr", function()
   local esc = vim.fn.escape(vim.fn.getreg(""), [[\/.*$^~[]]])
-  vim.fn.feedkeys(vim.api.nvim_replace_termcodes(
-    string.format(
-      ":%%s/%s//gc<Left><Left><Left>",
-      esc
-    ),
-    true,
-    false,
-    true
-  ), "n")
+  local cmd = string.format(":%%s/%s//gc<Left><Left><Left>", esc)
+  local keys = vim.api.nvim_replace_termcodes(cmd, true, false, true)
+  vim.fn.feedkeys(keys, "n")
 end, { desc = "Substitute selection in buffer" })
 
 -- Prompted substitute in current buffer (literal find text)
