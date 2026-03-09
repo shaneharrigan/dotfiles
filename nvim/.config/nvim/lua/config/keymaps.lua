@@ -30,6 +30,96 @@ vim.keymap.set("v", "p", '"_dP', { desc = "Paste without yanking" })
 -- Clear search highlighting
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>", { desc = "Clear highlights" })
 
+-- Show full diagnostics in a focusable floating window
+vim.keymap.set("n", "<leader>ll", function()
+  vim.diagnostic.open_float(nil, {
+    scope = "line",
+    focusable = true,
+    border = "rounded",
+    source = "always",
+    max_width = 140,
+  })
+end, { desc = "Line diagnostics (full)" })
+
+local function ex_single_quoted_literal(text)
+  return text:gsub("\\", "\\\\"):gsub("'", "''")
+end
+
+local function ex_replacement_literal(text)
+  return text:gsub("\\", "\\\\"):gsub("&", "\\&")
+end
+
+-- Replace current visual selection throughout the whole buffer
+vim.keymap.set("x", "<leader>sr", function()
+  local esc = vim.fn.escape(vim.fn.getreg(""), [[\/.*$^~[]]])
+  vim.fn.feedkeys(vim.api.nvim_replace_termcodes(
+    string.format(
+      ":%%s/%s//gc<Left><Left><Left>",
+      esc
+    ),
+    true,
+    false,
+    true
+  ), "n")
+end, { desc = "Substitute selection in buffer" })
+
+-- Prompted substitute in current buffer (literal find text)
+vim.keymap.set("n", "<leader>sa", function()
+  local find = vim.fn.input("Find (literal): ")
+  if find == "" then
+    return
+  end
+  local replace = vim.fn.input("Replace with: ")
+  local confirm = vim.fn.input("Confirm each? [y/N]: ")
+  local flags = "g"
+  if confirm:lower() == "y" then
+    flags = "gc"
+  end
+
+  vim.cmd(string.format(
+    "%%s/\\V%s/%s/%s",
+    ex_single_quoted_literal(find),
+    ex_replacement_literal(replace),
+    flags
+  ))
+end, { desc = "Substitute in buffer (prompt)" })
+
+-- Prompted substitute only inside double quotes
+vim.keymap.set("n", "<leader>su", function()
+  local find = vim.fn.input("Inside quotes, replace (literal): ")
+  if find == "" then
+    return
+  end
+  local replace = vim.fn.input("With: ")
+
+  vim.cmd(string.format(
+    "%%s/\"\\zs[^\"]*\\ze\"/\\=substitute(submatch(0), '\\\\V%s', '%s', 'g')/g",
+    ex_single_quoted_literal(find),
+    ex_replacement_literal(replace)
+  ))
+end, { desc = "Substitute in quotes (prompt)" })
+
+-- Prompted word-under-cursor replace (whole word, buffer-wide)
+vim.keymap.set("n", "<leader>sw", function()
+  local word = vim.fn.expand("<cword>")
+  if word == "" then
+    return
+  end
+  local replace = vim.fn.input("Replace '" .. word .. "' with: ")
+  vim.cmd(string.format(
+    "%%s/\\<%s\\>/%s/gc",
+    vim.fn.escape(word, [[\\/]]),
+    ex_replacement_literal(replace)
+  ))
+end, { desc = "Replace word under cursor" })
+
+-- Remove trailing whitespace in the whole buffer and keep cursor position
+vim.keymap.set("n", "<leader>st", function()
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  vim.cmd([[%s/\s\+$//e]])
+  vim.api.nvim_win_set_cursor(0, cursor)
+end, { desc = "Trim trailing whitespace" })
+
 -- Hover docs (prevent fallback to :Man when LSP is not attached)
 vim.keymap.set("n", "K", function()
   local bufnr = vim.api.nvim_get_current_buf()
