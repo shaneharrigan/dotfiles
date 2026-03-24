@@ -8,6 +8,12 @@ vim.keymap.set("i", "jk", "<ESC>", { desc = "Exit insert mode" })
 -- Save file
 vim.keymap.set("n", "<leader>w", "<cmd>w<cr>", { desc = "Save" })
 
+-- System clipboard
+vim.keymap.set({ "n", "v" }, "<leader>y", '"+y', { desc = "Yank to system clipboard" })
+vim.keymap.set("n", "<leader>Y", '"+Y', { desc = "Yank line to system clipboard" })
+vim.keymap.set({ "n", "v" }, "<leader>p", '"+p', { desc = "Paste after from system clipboard" })
+vim.keymap.set({ "n", "v" }, "<leader>P", '"+P', { desc = "Paste before from system clipboard" })
+
 -- Skip 10 lines at a time
 vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Scroll down" })
 vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Scroll up" })
@@ -172,6 +178,63 @@ vim.keymap.set("n", "<leader>bd", "<cmd>bdelete<cr>", { desc = "Delete buffer" }
 -- Quit
 vim.keymap.set("n", "<leader>qq", "<cmd>qa<cr>", { desc = "Quit all" })
 
+-- Context help popup (normal mode)
+local function show_context_hotkeys()
+  local ft = vim.bo.filetype
+  local bufname = vim.api.nvim_buf_get_name(0)
+  local lines = {
+    "# Context Help",
+    "",
+    "## General",
+    "- <leader>w: save",
+    "- <leader>y / <leader>Y: yank to system clipboard",
+    "- <leader>p / <leader>P: paste from system clipboard",
+    "- <leader>qq: quit all",
+    "- <leader>e: toggle file explorer",
+    "- <leader>ff: find files",
+    "- <leader>fg: live grep",
+    "- <leader>gg: lazygit",
+    "- <leader>gh: file git history",
+    "",
+    "## AI Inline (manual only)",
+    "- <leader>ai: toggle inline suggestions",
+    "- <C-g>j: toggle inline suggestions",
+    "- <C-g>k: next suggestion",
+    "- <C-g>h: previous suggestion",
+    "- <C-g>l: accept suggestion",
+    "",
+    "## AI Chat",
+    "- <leader>aa: toggle chat",
+    "- <leader>ap: open chat",
+    "- <leader>aq: quick ask popup",
+    "- <leader>am: model picker",
+    "- <leader>ar: reset chat",
+    "- <leader>aS: stop generation",
+  }
+
+  if ft == "copilot-chat" or bufname:match("copilot") then
+    lines[#lines + 1] = ""
+    lines[#lines + 1] = "## In Chat Buffer"
+    lines[#lines + 1] = "- <C-s>: submit prompt"
+    lines[#lines + 1] = "- <C-c>: close chat"
+    lines[#lines + 1] = "- <C-l>: reset chat"
+    lines[#lines + 1] = "- /Review, /Fix, /Explain: prompt templates"
+    lines[#lines + 1] = "- #buffer:active: include active buffer context"
+    lines[#lines + 1] = "- $gpt-4.1: choose model inline"
+  end
+
+  vim.lsp.util.open_floating_preview(lines, "markdown", {
+    border = "rounded",
+    max_width = 90,
+    focusable = true,
+  })
+end
+
+vim.keymap.set("n", "?", show_context_hotkeys, { desc = "Context help" })
+vim.keymap.set("n", "g?", function()
+  vim.fn.feedkeys("?", "n")
+end, { desc = "Reverse search" })
+
 ------------------------------------------------------------------
 -- Plugin-specific Keymaps
 ------------------------------------------------------------------
@@ -200,5 +263,6 @@ vim.keymap.set("n", "<leader>gg", "<cmd>LazyGit<cr>", { desc = "LazyGit" })
 vim.keymap.set("n", "<leader>gb", "<cmd>Telescope git_branches<cr>", { desc = "Git Branches" })
 vim.keymap.set("n", "<leader>gc", "<cmd>Telescope git_commits<cr>", { desc = "Git Commits" })
 vim.keymap.set("n", "<leader>gs", "<cmd>Telescope git_status<cr>", { desc = "Git Status" })
+vim.keymap.set("n", "<leader>gh", "<cmd>Telescope git_bcommits<cr>", { desc = "File History" })
 
 

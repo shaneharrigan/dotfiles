@@ -61,6 +61,7 @@ return {
           "ruff",
           "black",
           "isort",
+          "debugpy",
           
           -- C/C++ tools
           "clangd",

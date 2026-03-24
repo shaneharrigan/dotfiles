@@ -56,7 +56,28 @@ vim.opt.signcolumn = "yes"
 vim.opt.backspace = "indent,eol,start"
 
 -- Clipboard
-vim.opt.clipboard:append("unnamedplus")
+local uname = (vim.uv or vim.loop).os_uname()
+local release = (uname and uname.release or ""):lower()
+local is_wsl = vim.fn.has("wsl") == 1 or release:match("microsoft") ~= nil
+
+if is_wsl then
+	vim.g.clipboard = {
+		name = "WslClipboard",
+		copy = {
+			["+"] = "clip.exe",
+			["*"] = "clip.exe",
+		},
+		paste = {
+			["+"] = 'powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).ToString().Replace("`r", ""))',
+			["*"] = 'powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).ToString().Replace("`r", ""))',
+		},
+		cache_enabled = 0,
+	}
+else
+	vim.g.clipboard = "osc52"
+end
+
+vim.opt.clipboard = "unnamedplus"
 
 -- Split windows
 vim.opt.splitright = true
@@ -90,7 +111,7 @@ vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 vim.opt.cursorline = true
 
 -- Make clipboard universal
-vim.opt.clipboard:append("unnamedplus")
+vim.opt.clipboard = "unnamedplus"
 
 ------------------------------------------------------------------
 -- Setup lazy.nvim

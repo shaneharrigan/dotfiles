@@ -12,6 +12,9 @@ return {
       
       -- Go debugging
       "leoluz/nvim-dap-go",
+
+      -- Python debugging
+      "mfussenegger/nvim-dap-python",
     },
     config = function()
       local dap = require("dap")
@@ -98,6 +101,9 @@ return {
           build_flags = "",
         },
       })
+
+      -- Setup Python debugging
+      require("dap-python").setup(vim.fn.stdpath("data") .. "/mason/packages/debugpy/venv/bin/python")
       
       -- Setup C/C++ debugging with codelldb
       dap.adapters.codelldb = {

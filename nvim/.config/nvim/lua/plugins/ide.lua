@@ -244,6 +244,7 @@ return {
       "nvim-lua/plenary.nvim",
       "nvim-treesitter/nvim-treesitter",
       "nvim-neotest/neotest-go",
+      "nvim-neotest/neotest-python",
       "rcasia/neotest-java",
     },
     config = function()
@@ -254,6 +255,9 @@ return {
               test_table = true,
             },
             args = { "-count=1", "-timeout=60s" }
+          }),
+          require("neotest-python")({
+            dap = { justMyCode = false },
           }),
           require("neotest-java")({
             ignore_wrapper = false,
