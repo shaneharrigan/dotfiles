@@ -80,38 +80,48 @@ source $ZSH/oh-my-zsh.sh
 
 # User configuration
 
-# export MANPATH="/usr/local/man:$MANPATH"
+# History and directory navigation.
+HISTSIZE=50000
+SAVEHIST=50000
+setopt AUTO_CD
+setopt HIST_IGNORE_DUPS
+setopt HIST_FIND_NO_DUPS
+setopt HIST_REDUCE_BLANKS
+setopt EXTENDED_HISTORY
+setopt SHARE_HISTORY
+setopt INC_APPEND_HISTORY
 
-# You may need to manually set your language environment
-# export LANG=en_US.UTF-8
-
-# Preferred editor for local and remote sessions
-# if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
-# else
-#   export EDITOR='nvim'
-# fi
-
-# Compilation flags
-# export ARCHFLAGS="-arch $(uname -m)"
-
-# Set personal aliases, overriding those provided by Oh My Zsh libs,
-# plugins, and themes. Aliases can be placed here, though Oh My Zsh
-# users are encouraged to define aliases within a top-level file in
-# the $ZSH_CUSTOM folder, with .zsh extension. Examples:
-# - $ZSH_CUSTOM/aliases.zsh
-# - $ZSH_CUSTOM/macos.zsh
-# For a full list of active aliases, run `alias`.
-#
-# Example aliases
-# alias zshconfig="mate ~/.zshrc"
-# alias ohmyzsh="mate ~/.oh-my-zsh"
+# Make completion less rigid and easier to scan.
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
+
+# Optional tool integrations.
+# zoxide learns where you actually work and gives smarter directory jumping via `z`.
+if command -v zoxide >/dev/null 2>&1; then
+  eval "$(zoxide init zsh)"
+fi
+
+# direnv loads project-local environment variables as you enter a directory.
+if command -v direnv >/dev/null 2>&1; then
+  eval "$(direnv hook zsh)"
+fi
+
+# fzf powers fuzzy history/file pickers; ripgrep keeps the file list fast.
+if command -v fzf >/dev/null 2>&1; then
+  export FZF_DEFAULT_COMMAND='rg --files --hidden -g "!.git"'
+  export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+fi
+
+# Prefer modern CLI tools when installed, but keep sensible fallbacks.
+if command -v bat >/dev/null 2>&1; then
+  alias cat='bat --paging=never --style=plain'
+fi
 
 # SSH agent - start once and reuse across terminal sessions
 _ssh_agent_env="$HOME/.ssh/agent.env"
@@ -129,13 +139,16 @@ if [[ $- == *i* ]] && command -v tmux >/dev/null 2>&1 && [[ -z "$TMUX" ]]; then
   exec tmux new-session -A -s main
 fi
 
+# Editor and shell shortcuts
 alias vi=nvim
-alias gw=./gradlew
+alias v=nvim
+alias vim=nvim
+alias zr='exec zsh'
+alias ztools='$HOME/Sources/dotfiles/scripts/install-tools.sh'
+alias h='history 1'
+alias j='jobs -l'
 
-# Reload shell config quickly
-alias zr='source ~/.zshrc'
-
-# Safer + nicer core commands
+# Filesystem
 alias ls='ls --color=auto'
 alias ll='ls -lah'
 alias la='ls -A'
@@ -143,11 +156,22 @@ alias grep='grep --color=auto'
 alias cp='cp -i'
 alias mv='mv -i'
 alias rm='rm -i'
+alias path='echo $PATH | tr ":" "\n"'
+alias du1='du -h --max-depth=1'
+alias dfh='df -h'
+alias mkdir='mkdir -pv'
+
+if command -v eza >/dev/null 2>&1; then
+  alias ls='eza --group-directories-first'
+  alias ll='eza -lah --group-directories-first'
+  alias la='eza -a --group-directories-first'
+fi
 
 # Navigation
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
+alias zc='cd ~/Sources/dotfiles'
 alias cdd='cd ~/Sources/dotfiles'
 
 # Git shortcuts
@@ -161,16 +185,125 @@ alias gl='git pull --rebase'
 alias gco='git checkout'
 alias gb='git branch'
 alias gd='git diff'
+alias gdc='git diff --cached'
 alias glog='git log --oneline --graph --decorate -20'
 
 # Gradle (pairs well with your gw alias)
+alias gw=./gradlew
 alias gwt='./gradlew test'
 alias gwb='./gradlew build'
 alias gwc='./gradlew clean'
 alias gwr='./gradlew run'
 
 # Tmux quality-of-life
+alias t='tmux'
 alias ta='tmux attach -t main'
+alias ts='tmux new-session -A -s main'
 alias tn='tmux new -s main'
 alias tls='tmux ls'
+
+# Functions
+mkcd() {
+  mkdir -p "$1" && cd "$1"
+}
+
+psg() {
+  ps aux | grep -i -- "$1" | grep -v grep
+}
+
+groot() {
+  cd "$(git rev-parse --show-toplevel)"
+}
+
+# Copy args or stdin into the desktop clipboard across Wayland/X11 setups.
+clipcopy() {
+  if command -v wl-copy >/dev/null 2>&1; then
+    if [[ $# -gt 0 ]]; then
+      printf '%s' "$*" | wl-copy
+    else
+      wl-copy
+    fi
+    return
+  fi
+
+  if command -v xclip >/dev/null 2>&1; then
+    if [[ $# -gt 0 ]]; then
+      printf '%s' "$*" | xclip -selection clipboard
+    else
+      xclip -selection clipboard
+    fi
+    return
+  fi
+
+  if command -v xsel >/dev/null 2>&1; then
+    if [[ $# -gt 0 ]]; then
+      printf '%s' "$*" | xsel --clipboard --input
+    else
+      xsel --clipboard --input
+    fi
+    return
+  fi
+
+  echo "No clipboard tool found. Install wl-copy, xclip, or xsel."
+  return 1
+}
+
+# Jump to a child directory chosen through fzf; falls back cleanly if tooling is missing.
+fcd() {
+  local target
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is not installed."
+    return 1
+  fi
+
+  if command -v fd >/dev/null 2>&1; then
+    target="$(fd --type d --hidden --exclude .git . | fzf)"
+  else
+    target="$(find . -type d -not -path '*/.git/*' | sed 's#^./##' | fzf)"
+  fi
+
+  [[ -n "$target" ]] && cd "$target"
+}
+
+# Fuzzy-pick a branch and switch to it quickly.
+fbr() {
+  local branch
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is not installed."
+    return 1
+  fi
+
+  branch="$(git for-each-ref --sort=-committerdate refs/heads refs/remotes --format='%(refname:short)' | awk '!seen[$0]++' | fzf)"
+  [[ -n "$branch" ]] && git checkout "$branch"
+}
+
+# Fetch, prune, and rebase your current branch in one step.
+gsync() {
+  git fetch --prune && git pull --rebase
+}
+
+# Undo the last commit while keeping changes staged for a corrected commit.
+gundo() {
+  git reset --soft HEAD~1
+}
+
+# Unpack common archive formats without remembering the exact tool flags.
+extract() {
+  case "$1" in
+    *.tar.bz2) tar xjf "$1" ;;
+    *.tar.gz) tar xzf "$1" ;;
+    *.bz2) bunzip2 "$1" ;;
+    *.gz) gunzip "$1" ;;
+    *.rar) unrar x "$1" ;;
+    *.tar) tar xf "$1" ;;
+    *.tbz2) tar xjf "$1" ;;
+    *.tgz) tar xzf "$1" ;;
+    *.zip) unzip "$1" ;;
+    *.Z) uncompress "$1" ;;
+    *.7z) 7z x "$1" ;;
+    *) echo "cannot extract: $1" ;;
+  esac
+}
 
