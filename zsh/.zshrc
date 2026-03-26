@@ -1,3 +1,7 @@
+setopt AUTO_PUSHD
+setopt PUSHD_IGNORE_DUPS
+setopt PUSHD_SILENT
+DIRSTACKSIZE=20
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 
@@ -169,3 +173,4 @@ alias gwr='./gradlew run'
 alias ta='tmux attach -t main'
 alias tn='tmux new -s main'
 alias tls='tmux ls'
+
