@@ -13,7 +13,7 @@ Examples:
   ./scripts/install-tools.sh fzf zoxide
 
 Supported tools:
-  bat direnv eza fd fzf ripgrep wl-clipboard xclip xsel zoxide
+  bat clipboard direnv eza fd fzf ripgrep wl-clipboard xclip xsel zoxide
 EOF
 }
 
@@ -47,16 +47,18 @@ package_for() {
 
   case "$manager:$tool" in
     brew:bat) echo bat ;;
+    brew:clipboard) echo xclip ;;
     brew:direnv) echo direnv ;;
     brew:eza) echo eza ;;
     brew:fd) echo fd ;;
     brew:fzf) echo fzf ;;
     brew:ripgrep) echo ripgrep ;;
-    brew:wl-clipboard) echo wl-clipboard ;;
+    brew:wl-clipboard) echo xclip ;;
     brew:xclip) echo xclip ;;
     brew:xsel) echo xsel ;;
     brew:zoxide) echo zoxide ;;
     apt:bat) echo bat ;;
+    apt:clipboard) echo wl-clipboard ;;
     apt:direnv) echo direnv ;;
     apt:eza) echo eza ;;
     apt:fd) echo fd-find ;;
@@ -106,7 +108,7 @@ main() {
       eza
       bat
       fd
-      wl-clipboard
+      clipboard
     )
   fi
 
@@ -117,6 +119,10 @@ main() {
 
   echo "Using package manager: $manager"
   echo "Installing: ${requested_tools[*]}"
+
+  if [[ "$manager" == "brew" && " ${requested_tools[*]} " == *" clipboard "* ]]; then
+    echo "Using xclip for clipboard support on Homebrew."
+  fi
 
   if [[ "$manager" == "brew" ]]; then
     brew install "${packages[@]}"
