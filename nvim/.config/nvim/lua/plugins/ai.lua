@@ -146,43 +146,95 @@ return {
   },
 
   ------------------------------------------------------------------
-  -- Avante (Cursor-like inline diffs + file editing)
+  -- CodeCompanion (agentic chat + inline edits)
   ------------------------------------------------------------------
   {
-    "yetone/avante.nvim",
+    "olimorris/codecompanion.nvim",
     event = "VeryLazy",
-    version = false,
-    build = "make",
     dependencies = {
-      "nvim-treesitter/nvim-treesitter",
       "nvim-lua/plenary.nvim",
-      "MunifTanjim/nui.nvim",
-      -- Optional: richer markdown rendering in the chat panel
-      { "MeanderingProgrammer/render-markdown.nvim", ft = { "markdown", "Avante" } },
+      "nvim-treesitter/nvim-treesitter",
     },
     opts = {
-      provider = "copilot",
-      -- Avoid collisions with CopilotChat (<leader>aa/ar) and copilot.lua (<leader>ah, <M-l>)
-      mappings = {
-        ask = "<leader>aA",
-        edit = "<leader>ae",
-        refresh = "<leader>aX",
-        focus = "<leader>af",
-        toggle = {
-          default = "<leader>at",
-          debug = "<leader>aD",
-          hint = "<leader>aH",
-          suggestion = "<leader>aTs",
-          repomap = "<leader>aTm",
+      display = {
+        action_palette = {
+          provider = "telescope",
         },
-        -- remap avante's suggestion keys away from copilot.lua's <M-l>, <M-k>, <M-h>
-        suggestion = {
-          accept = "<M-CR>",
-          next = "<M-n>",
-          prev = "<M-p>",
-          dismiss = "<M-e>",
+      },
+      interactions = {
+        chat = {
+          adapter = {
+            name = "copilot",
+            model = "gpt-4.1",
+          },
+          opts = {
+            system_prompt = function(ctx)
+              return ctx.default_system_prompt .. [[
+
+Additional requirements for code edits:
+- Always produce syntactically complete code. Never leave incomplete or truncated file endings.
+- Close all opened blocks, tags, and delimiters.
+- Preserve the file's existing style and indentation unless asked to change it.
+- Ensure the final file ends with a single trailing newline.
+]]
+            end,
+          },
+        },
+        inline = {
+          adapter = {
+            name = "copilot",
+            model = "gpt-4.1",
+          },
+        },
+        cmd = {
+          adapter = {
+            name = "copilot",
+            model = "gpt-4.1",
+          },
+        },
+      },
+      prompt_library = {
+        ["Finish File"] = {
+          interaction = "inline",
+          description = "Complete code cleanly through end-of-file",
+          opts = {
+            alias = "finish-file",
+            auto_submit = true,
+            modes = { "n", "v" },
+            placement = "replace",
+          },
+          prompts = {
+            {
+              role = "system",
+              content = [[
+You are completing an in-editor code edit.
+Always return syntactically complete output.
+Never leave incomplete endings.
+Close all opened blocks/tags/delimiters.
+Preserve style and indentation.
+Ensure a single trailing newline at EOF.
+]],
+            },
+            {
+              role = "user",
+              content = "Finish and cleanly end this code without changing unrelated logic.",
+            },
+          },
         },
       },
     },
+    config = function(_, opts)
+      require("codecompanion").setup(opts)
+
+      vim.keymap.set({ "n", "v" }, "<leader>aA", "<cmd>CodeCompanionChat Toggle<cr>", { desc = "AI Agent chat" })
+      vim.keymap.set({ "n", "v" }, "<leader>aP", "<cmd>CodeCompanionActions<cr>", { desc = "AI Action palette" })
+      vim.keymap.set({ "n", "v" }, "<leader>ae", "<cmd>CodeCompanion<cr>", { desc = "AI inline edit" })
+      vim.keymap.set({ "n", "v" }, "<leader>an", "<cmd>CodeCompanionChat<cr>", { desc = "AI new chat prompt" })
+      vim.keymap.set("n", "<leader>aL", "<cmd>CodeCompanionCLI<cr>", { desc = "AI CLI agent" })
+      vim.keymap.set({ "n", "v" }, "<leader>aF", "<cmd>CodeCompanion /finish-file<cr>", { desc = "AI finish file" })
+      vim.keymap.set("v", "<leader>af", "<cmd>CodeCompanion /fix<cr>", { desc = "AI fix selection" })
+      vim.keymap.set("v", "<leader>ax", "<cmd>CodeCompanion /explain<cr>", { desc = "AI explain selection" })
+      vim.keymap.set("v", "<leader>at", "<cmd>CodeCompanion /tests<cr>", { desc = "AI generate tests" })
+    end,
   },
 }

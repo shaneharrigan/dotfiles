@@ -15,7 +15,7 @@ return {
         defaults = {
           prompt_prefix = " ",
           selection_caret = " ",
-          path_display = { "truncate" },
+          path_display = { "smart" },
           file_ignore_patterns = { "node_modules", ".git/", "target/" },
           mappings = {
             i = {

@@ -119,9 +119,6 @@ if command -v fzf >/dev/null 2>&1; then
 fi
 
 # Prefer modern CLI tools when installed, but keep sensible fallbacks.
-if command -v bat >/dev/null 2>&1; then
-  alias cat='bat --paging=never --style=plain'
-fi
 
 # SSH agent - start once and reuse across terminal sessions
 _ssh_agent_env="$HOME/.ssh/agent.env"
@@ -133,11 +130,6 @@ if ! ssh-add -l &>/dev/null; then
   . "$_ssh_agent_env" > /dev/null 2>&1
 fi
 unset _ssh_agent_env
-
-# Auto-start tmux for interactive shells when not already in a tmux session.
-if [[ $- == *i* ]] && command -v tmux >/dev/null 2>&1 && [[ -z "$TMUX" ]]; then
-  exec tmux new-session -A -s main
-fi
 
 # Editor and shell shortcuts
 alias vi=nvim
@@ -203,6 +195,17 @@ alias tn='tmux new -s main'
 alias tls='tmux ls'
 
 # Functions
+# Use bat as a cat replacement when available; fall back to coreutils cat.
+unalias cat 2>/dev/null
+rehash
+cat() {
+  if command -v bat >/dev/null 2>&1; then
+    bat --paging=never --style=plain "$@"
+  else
+    command cat "$@"
+  fi
+}
+
 mkcd() {
   mkdir -p "$1" && cd "$1"
 }

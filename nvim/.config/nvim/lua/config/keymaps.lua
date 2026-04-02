@@ -207,6 +207,7 @@ local function show_context_hotkeys()
     "- <leader>aa: toggle chat",
     "- <leader>ap: open chat",
     "- <leader>aq: quick ask popup",
+    "- <leader>aF: finish-file inline edit",
     "- <leader>am: model picker",
     "- <leader>ar: reset chat",
     "- <leader>aS: stop generation",
@@ -219,6 +220,7 @@ local function show_context_hotkeys()
     lines[#lines + 1] = "- <C-c>: close chat"
     lines[#lines + 1] = "- <C-l>: reset chat"
     lines[#lines + 1] = "- /Review, /Fix, /Explain: prompt templates"
+    lines[#lines + 1] = "- /finish-file: complete code/file endings"
     lines[#lines + 1] = "- #buffer:active: include active buffer context"
     lines[#lines + 1] = "- $gpt-4.1: choose model inline"
   end
