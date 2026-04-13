@@ -1,3 +1,7 @@
+local codex_path = vim.fn.exepath("codex")
+local cagent_path = vim.fn.exepath("cagent")
+local default_cli_agent = codex_path ~= "" and "codex" or (cagent_path ~= "" and "cagent" or nil)
+
 return {
   ------------------------------------------------------------------
   -- GitHub Copilot (inline suggestions)
@@ -97,6 +101,38 @@ return {
   ------------------------------------------------------------------
   {
     "CopilotC-Nvim/CopilotChat.nvim",
+    cmd = { "CopilotChat", "CopilotChatModels", "CopilotChatReset", "CopilotChatStop" },
+    keys = {
+      {
+        "<leader>aa",
+        function()
+          require("CopilotChat").toggle()
+        end,
+        desc = "AI Chat Toggle",
+      },
+      {
+        "<leader>ap",
+        function()
+          require("CopilotChat").open()
+        end,
+        desc = "AI Chat Prompt",
+      },
+      { "<leader>am", "<cmd>CopilotChatModels<cr>", desc = "AI Select Model" },
+      { "<leader>ac", "<cmd>CopilotChat<cr>", desc = "AI Chat (ask)" },
+      { "<leader>aR", "<cmd>CopilotChatReset<cr>", desc = "AI Chat reset" },
+      { "<leader>aS", "<cmd>CopilotChatStop<cr>", desc = "AI Chat stop" },
+      {
+        "<leader>aq",
+        function()
+          vim.ui.input({ prompt = "Ask Copilot: " }, function(input)
+            if input and input ~= "" then
+              require("CopilotChat").ask(input)
+            end
+          end)
+        end,
+        desc = "AI quick ask",
+      },
+    },
     dependencies = {
       { "zbirenbaum/copilot.lua" },
       { "nvim-lua/plenary.nvim" },
@@ -119,29 +155,7 @@ return {
       },
     },
     config = function(_, opts)
-      local chat = require("CopilotChat")
-      chat.setup(opts)
-
-      vim.keymap.set({ "n", "v" }, "<leader>aa", function()
-        chat.toggle()
-      end, { desc = "AI Chat Toggle" })
-
-      vim.keymap.set({ "n", "v" }, "<leader>ap", function()
-        chat.open()
-      end, { desc = "AI Chat Prompt" })
-
-      vim.keymap.set("n", "<leader>am", "<cmd>CopilotChatModels<cr>", { desc = "AI Select Model" })
-      vim.keymap.set("n", "<leader>ac", "<cmd>CopilotChat<cr>", { desc = "AI Chat (ask)" })
-      vim.keymap.set("n", "<leader>aR", "<cmd>CopilotChatReset<cr>", { desc = "AI Chat reset" })
-      vim.keymap.set("n", "<leader>aS", "<cmd>CopilotChatStop<cr>", { desc = "AI Chat stop" })
-
-      vim.keymap.set({ "n", "v" }, "<leader>aq", function()
-        vim.ui.input({ prompt = "Ask Copilot: " }, function(input)
-          if input and input ~= "" then
-            chat.ask(input)
-          end
-        end)
-      end, { desc = "AI quick ask" })
+      require("CopilotChat").setup(opts)
     end,
   },
 
@@ -150,7 +164,28 @@ return {
   ------------------------------------------------------------------
   {
     "olimorris/codecompanion.nvim",
-    event = "VeryLazy",
+    cmd = { "CodeCompanion", "CodeCompanionChat", "CodeCompanionActions", "CodeCompanionCLI" },
+    keys = {
+      { "<leader>aA", "<cmd>CodeCompanionChat Toggle<cr>", desc = "AI Agent chat", mode = { "n", "v" } },
+      { "<leader>aP", "<cmd>CodeCompanionActions<cr>", desc = "AI Action palette", mode = { "n", "v" } },
+      { "<leader>ae", "<cmd>CodeCompanion<cr>", desc = "AI inline edit", mode = { "n", "v" } },
+      { "<leader>an", "<cmd>CodeCompanionChat<cr>", desc = "AI new chat prompt", mode = { "n", "v" } },
+      {
+        "<leader>aL",
+        function()
+          if default_cli_agent == nil then
+            vim.notify("No CodeCompanion CLI agent found. Install `codex` or `cagent`.", vim.log.levels.ERROR)
+            return
+          end
+          vim.cmd("CodeCompanionCLI")
+        end,
+        desc = "AI CLI agent",
+      },
+      { "<leader>aF", "<cmd>CodeCompanion /finish-file<cr>", desc = "AI finish file", mode = { "n", "v" } },
+      { "<leader>af", "<cmd>CodeCompanion /fix<cr>", desc = "AI fix selection", mode = "v" },
+      { "<leader>ax", "<cmd>CodeCompanion /explain<cr>", desc = "AI explain selection", mode = "v" },
+      { "<leader>at", "<cmd>CodeCompanion /tests<cr>", desc = "AI generate tests", mode = "v" },
+    },
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-treesitter/nvim-treesitter",
@@ -166,6 +201,32 @@ return {
           adapter = {
             name = "copilot",
             model = "gpt-4.1",
+          },
+          tools = {
+            opts = {
+              -- Load the built-in agent tool group in every chat buffer so the
+              -- model can read/edit files and run approved commands by default.
+              default_tools = { "agent" },
+            },
+            -- Avoid leaving Copilot chat requests mid-tool when common reads or
+            -- command lookups require approval. File edits still use the plugin's
+            -- diff/confirmation flow, so actual changes remain reviewable.
+            ["read_file"] = {
+              opts = {
+                require_approval_before = false,
+              },
+            },
+            ["grep_search"] = {
+              opts = {
+                require_approval_before = false,
+              },
+            },
+            ["run_command"] = {
+              opts = {
+                require_approval_before = false,
+                require_cmd_approval = false,
+              },
+            },
           },
           opts = {
             system_prompt = function(ctx)
@@ -190,6 +251,21 @@ Additional requirements for code edits:
           adapter = {
             name = "copilot",
             model = "gpt-4.1",
+          },
+        },
+        cli = {
+          agent = default_cli_agent,
+          agents = {
+            codex = {
+              cmd = codex_path ~= "" and codex_path or "codex",
+              args = {},
+              description = "OpenAI Codex CLI",
+            },
+            cagent = {
+              cmd = cagent_path ~= "" and cagent_path or "cagent",
+              args = {},
+              description = "cagent CLI",
+            },
           },
         },
       },
@@ -225,16 +301,6 @@ Ensure a single trailing newline at EOF.
     },
     config = function(_, opts)
       require("codecompanion").setup(opts)
-
-      vim.keymap.set({ "n", "v" }, "<leader>aA", "<cmd>CodeCompanionChat Toggle<cr>", { desc = "AI Agent chat" })
-      vim.keymap.set({ "n", "v" }, "<leader>aP", "<cmd>CodeCompanionActions<cr>", { desc = "AI Action palette" })
-      vim.keymap.set({ "n", "v" }, "<leader>ae", "<cmd>CodeCompanion<cr>", { desc = "AI inline edit" })
-      vim.keymap.set({ "n", "v" }, "<leader>an", "<cmd>CodeCompanionChat<cr>", { desc = "AI new chat prompt" })
-      vim.keymap.set("n", "<leader>aL", "<cmd>CodeCompanionCLI<cr>", { desc = "AI CLI agent" })
-      vim.keymap.set({ "n", "v" }, "<leader>aF", "<cmd>CodeCompanion /finish-file<cr>", { desc = "AI finish file" })
-      vim.keymap.set("v", "<leader>af", "<cmd>CodeCompanion /fix<cr>", { desc = "AI fix selection" })
-      vim.keymap.set("v", "<leader>ax", "<cmd>CodeCompanion /explain<cr>", { desc = "AI explain selection" })
-      vim.keymap.set("v", "<leader>at", "<cmd>CodeCompanion /tests<cr>", { desc = "AI generate tests" })
     end,
   },
 }

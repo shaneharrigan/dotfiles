@@ -225,8 +225,8 @@ return {
         python = { "ruff" },
       }
       
-      -- Auto-lint on save and on text changed
-      vim.api.nvim_create_autocmd({ "BufWritePost", "BufReadPost", "InsertLeave" }, {
+      -- Lint on open/save, but avoid InsertLeave so editing stays snappy.
+      vim.api.nvim_create_autocmd({ "BufWritePost", "BufReadPost" }, {
         callback = function()
           lint.try_lint()
         end,
@@ -434,5 +434,4 @@ return {
     end,
   },
 }
-
 
