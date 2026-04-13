@@ -175,10 +175,21 @@ alias gca='git commit --amend'
 alias gp='git push'
 alias gl='git pull --rebase'
 alias gco='git checkout'
+alias gsw='git switch'
+alias gcb='git switch -c'
 alias gb='git branch'
 alias gd='git diff'
 alias gdc='git diff --cached'
+alias gprune='git fetch origin --prune --prune-tags'
+alias gpf='git push --force-with-lease'
+alias grs='git restore'
+alias grss='git restore --staged'
+alias gsh='git show --stat'
+alias gst='git stash push'
+alias gstp='git stash pop'
+alias gunstage='git restore --staged'
 alias glog='git log --oneline --graph --decorate -20'
+alias gloga='git log --oneline --graph --decorate --all -20'
 
 # Gradle (pairs well with your gw alias)
 alias gw=./gradlew
@@ -216,6 +227,11 @@ psg() {
 
 groot() {
   cd "$(git rev-parse --show-toplevel)"
+}
+
+# Print the current branch name, or fail clearly outside a git worktree.
+gcurrent() {
+  git branch --show-current
 }
 
 # Copy args or stdin into the desktop clipboard across Wayland/X11 setups.
@@ -292,6 +308,187 @@ gundo() {
   git reset --soft HEAD~1
 }
 
+# Show files with merge conflicts, so you can jump straight to the mess.
+gconflicts() {
+  git diff --name-only --diff-filter=U
+}
+
+# Fuzzy-pick a recent commit and preview its patch before showing it.
+fshow() {
+  local commit
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is not installed."
+    return 1
+  fi
+
+  commit="$(
+    git log --color=always --date=short \
+      --format='%C(auto)%h %C(blue)%ad%C(reset) %C(green)%an%C(reset) %s' |
+      fzf --ansi --no-sort --reverse \
+        --preview 'git show --color=always --stat --patch {1}' \
+        --preview-window=right:70%
+  )"
+
+  [[ -n "$commit" ]] && git show "${commit%% *}"
+}
+
+# Switch to a recently-touched branch, prioritising local branches first.
+grecent() {
+  local branch
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is not installed."
+    return 1
+  fi
+
+  branch="$(
+    git for-each-ref --sort=-committerdate refs/heads \
+      --format='%(refname:short)' |
+      fzf --height=40% --reverse
+  )"
+
+  [[ -n "$branch" ]] && git switch "$branch"
+}
+
+# Delete already-merged local branches, with a small safety list.
+gcleanmerged() {
+  local current_branch
+  local protected_branches
+  local branch
+  local deleted=0
+
+  current_branch="$(git branch --show-current)"
+  protected_branches=("main" "master" "develop" "dev" "$current_branch")
+
+  while IFS= read -r branch; do
+    [[ -z "$branch" ]] && continue
+
+    if [[ " ${protected_branches[*]} " == *" $branch "* ]]; then
+      continue
+    fi
+
+    git branch -d "$branch" && deleted=1
+  done < <(git branch --format='%(refname:short)' --merged)
+
+  if [[ $deleted -eq 0 ]]; then
+    echo "No merged local branches to delete."
+  fi
+}
+
+# Create a fixup commit against a target commit (defaults to HEAD).
+gfixup() {
+  local target="${1:-HEAD}"
+  git commit --fixup "$target"
+}
+
+# Resolve the repo's default branch using origin/HEAD when available.
+gdefault() {
+  local ref
+  local branch
+
+  ref="$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null)"
+  if [[ -n "$ref" ]]; then
+    echo "${ref#origin/}"
+    return 0
+  fi
+
+  for branch in main master develop dev; do
+    if git show-ref --verify --quiet "refs/heads/$branch" || git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+      echo "$branch"
+      return 0
+    fi
+  done
+
+  echo "Could not determine the default branch." >&2
+  return 1
+}
+
+# Rebase the current branch onto the latest default branch from origin.
+gup() {
+  local base
+  local base_ref
+
+  base="${1:-$(gdefault)}" || return 1
+  base_ref="origin/$base"
+
+  if ! git rev-parse --verify --quiet "$base_ref" >/dev/null; then
+    base_ref="$base"
+  fi
+
+  git fetch origin --prune && git rebase "$base_ref"
+}
+
+# Show the commit list and diff stat against the default branch.
+gprview() {
+  local base
+  local base_ref
+  local merge_base
+
+  base="${1:-$(gdefault)}" || return 1
+  base_ref="origin/$base"
+
+  if ! git rev-parse --verify --quiet "$base_ref" >/dev/null; then
+    base_ref="$base"
+  fi
+
+  merge_base="$(git merge-base "$base_ref" HEAD)" || return 1
+
+  echo "Commits since $base:"
+  git log --oneline --decorate "$merge_base..HEAD"
+  echo
+  echo "Changed files vs $base:"
+  git diff --stat "$merge_base..HEAD"
+}
+
+# List only the file paths changed against the default branch.
+gfiles() {
+  local base
+  local base_ref
+  local merge_base
+
+  base="${1:-$(gdefault)}" || return 1
+  base_ref="origin/$base"
+
+  if ! git rev-parse --verify --quiet "$base_ref" >/dev/null; then
+    base_ref="$base"
+  fi
+
+  merge_base="$(git merge-base "$base_ref" HEAD)" || return 1
+  git diff --name-only "$merge_base..HEAD"
+}
+
+# Jump between worktrees with fzf and preview each worktree's status.
+gwt() {
+  local target
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is not installed."
+    return 1
+  fi
+
+  target="$(
+    git worktree list --porcelain |
+      awk '
+        /^worktree / { path=substr($0, 10); next }
+        /^branch / { branch=substr($0, 8); sub("refs/heads/", "", branch); next }
+        /^detached$/ { branch="(detached)"; next }
+        /^$/ {
+          if (path != "") {
+            printf "%s\t%s\n", path, branch
+          }
+          path=""
+          branch=""
+        }
+      ' |
+      fzf --delimiter=$'\t' --with-nth=2,1 --height=40% --reverse \
+        --preview 'git -C {1} status -sb' \
+        --preview-window=right:70%
+  )"
+
+  [[ -n "$target" ]] && cd "${target%%$'\t'*}"
+}
+
 # Unpack common archive formats without remembering the exact tool flags.
 extract() {
   case "$1" in
@@ -310,3 +507,8 @@ extract() {
   esac
 }
 
+# Auto-start tmux for interactive shells when not already in a tmux session.
+# Keep this at the end so aliases and functions are defined before exec replaces the shell.
+if [[ $- == *i* ]] && command -v tmux >/dev/null 2>&1 && [[ -z "$TMUX" ]]; then
+  exec tmux new-session -A -s main
+fi
