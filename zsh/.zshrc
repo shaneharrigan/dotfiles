@@ -191,7 +191,7 @@ alias gunstage='git restore --staged'
 alias glog='git log --oneline --graph --decorate -20'
 alias gloga='git log --oneline --graph --decorate --all -20'
 
-# Gradle (pairs well with your gw alias)
+# Gradle helpers keep the `gw*` namespace.
 alias gw=./gradlew
 alias gwt='./gradlew test'
 alias gwb='./gradlew build'
@@ -459,7 +459,8 @@ gfiles() {
 }
 
 # Jump between worktrees with fzf and preview each worktree's status.
-gwt() {
+# Keep `gw*` reserved for Gradle, so git worktree helpers use `gwtree*`.
+gwtree() {
   local target
 
   if ! command -v fzf >/dev/null 2>&1; then
