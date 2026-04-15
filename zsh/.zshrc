@@ -468,6 +468,9 @@ gri() {
 }
 
 # Snapshot work-in-progress as a WIP commit; gunwip undoes it.
+unalias gwip 2>/dev/null
+unalias gunwip 2>/dev/null
+unalias gstash 2>/dev/null
 gwip() {
   git add -A && git commit -m "WIP: $(date '+%Y-%m-%d %H:%M')"
 }
