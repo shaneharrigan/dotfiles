@@ -458,6 +458,51 @@ gfiles() {
   git diff --name-only "$merge_base..HEAD"
 }
 
+# Interactive rebase against the default branch — squash/reorder before pushing.
+gri() {
+  local base merge_base
+
+  base="${1:-$(gdefault)}" || return 1
+  merge_base="$(git merge-base "origin/$base" HEAD)" || return 1
+  git rebase -i "$merge_base"
+}
+
+# Snapshot work-in-progress as a WIP commit; gunwip undoes it.
+gwip() {
+  git add -A && git commit -m "WIP: $(date '+%Y-%m-%d %H:%M')"
+}
+
+gunwip() {
+  git log --oneline -1 | grep -q "^[a-f0-9]* WIP:" && git reset HEAD~1
+}
+
+# Fuzzy-pick a stash entry with diff preview and pop it.
+gstash() {
+  local entry
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is not installed."
+    return 1
+  fi
+
+  entry="$(git stash list | fzf --reverse --preview 'git stash show -p {1}' --preview-window=right:70%)"
+  [[ -n "$entry" ]] && git stash pop "${entry%%:*}"
+}
+
+# Rename the current branch locally and on origin.
+grename() {
+  local old new
+
+  old="$(git branch --show-current)"
+  new="$1"
+  [[ -z "$new" ]] && { echo "Usage: grename <new-name>"; return 1; }
+
+  git branch -m "$old" "$new"
+  if git show-ref --verify --quiet "refs/remotes/origin/$old"; then
+    git push origin ":$old" "$new" && git push --set-upstream origin "$new"
+  fi
+}
+
 # Jump between worktrees with fzf and preview each worktree's status.
 # Keep `gw*` reserved for Gradle, so git worktree helpers use `gwtree*`.
 gwtree() {
