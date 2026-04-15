@@ -12,7 +12,11 @@ export ZSH="$HOME/.oh-my-zsh"
 # load a random theme each time Oh My Zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="robbyrussell"
+if [[ -f "$HOME/.oh-my-zsh/custom/themes/dotflow.zsh-theme" ]]; then
+  ZSH_THEME="dotflow"
+else
+  ZSH_THEME="robbyrussell"
+fi
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -77,6 +81,9 @@ ZSH_THEME="robbyrussell"
 plugins=(git)
 
 source $ZSH/oh-my-zsh.sh
+
+# Load optional zsh overlays shipped as separate stow packages.
+[[ -f "$HOME/.config/zsh/flow-enhancements.zsh" ]] && source "$HOME/.config/zsh/flow-enhancements.zsh"
 
 # User configuration
 
@@ -536,6 +543,176 @@ gwtree() {
   )"
 
   [[ -n "$target" ]] && cd "${target%%$'\t'*}"
+}
+
+# Create a new worktree from a base branch and check it out immediately.
+gwtreenew() {
+  local branch="$1"
+  local base
+  local base_ref
+  local path
+
+  if [[ -z "$branch" ]]; then
+    echo "Usage: gwtreenew <new-branch> [base-branch] [path]"
+    return 1
+  fi
+
+  base="${2:-$(gdefault)}" || return 1
+  path="${3:-../$branch}"
+  base_ref="origin/$base"
+
+  git fetch origin --prune || return 1
+
+  if ! git rev-parse --verify --quiet "$base_ref" >/dev/null; then
+    base_ref="$base"
+  fi
+
+  git worktree add -b "$branch" "$path" "$base_ref"
+}
+
+# Jump to a git repo under a root directory using fzf (default: ~/Sources).
+cproj() {
+  local root="${1:-$HOME/Sources}"
+  local target
+
+  if [[ ! -d "$root" ]]; then
+    echo "Directory not found: $root"
+    return 1
+  fi
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is not installed."
+    return 1
+  fi
+
+  if command -v fd >/dev/null 2>&1; then
+    target="$({ fd --hidden --no-ignore-vcs --type d '^.git$' "$root" 2>/dev/null || true; } |
+      sed 's#/.git$##' |
+      fzf --height=40% --reverse \
+        --preview 'git -C {} status -sb' \
+        --preview-window=right:70%)"
+  else
+    target="$(find "$root" -type d -name .git -prune 2>/dev/null |
+      sed 's#/.git$##' |
+      fzf --height=40% --reverse \
+        --preview 'git -C {} status -sb' \
+        --preview-window=right:70%)"
+  fi
+
+  [[ -n "$target" ]] && cd "$target"
+}
+
+# Fuzzy open files with preview in $EDITOR (defaults to nvim).
+fopen() {
+  local root="${1:-.}"
+  local file
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is not installed."
+    return 1
+  fi
+
+  if command -v fd >/dev/null 2>&1; then
+    file="$(fd --type f --hidden --follow --exclude .git . "$root" |
+      fzf --height=40% --reverse \
+        --preview 'if command -v bat >/dev/null 2>&1; then bat --paging=never --style=plain --color=always {}; else sed -n "1,200p" {}; fi' \
+        --preview-window=right:70%)"
+  else
+    file="$(find "$root" -type f -not -path '*/.git/*' |
+      fzf --height=40% --reverse \
+        --preview 'if command -v bat >/dev/null 2>&1; then bat --paging=never --style=plain --color=always {}; else sed -n "1,200p" {}; fi' \
+        --preview-window=right:70%)"
+  fi
+
+  [[ -n "$file" ]] && "${EDITOR:-nvim}" "$file"
+}
+
+# Quick system navigation for common locations.
+nav() {
+  local target
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is not installed."
+    return 1
+  fi
+
+  target="$(
+    printf '%s\n' \
+      "$HOME" \
+      "$HOME/Sources" \
+      "$HOME/Sources/dotfiles" \
+      "$HOME/.config" \
+      "/tmp" \
+      "/etc" \
+      "/var/log" |
+      while IFS= read -r dir; do
+        [[ -d "$dir" ]] && printf '%s\n' "$dir"
+      done |
+      fzf --height=40% --reverse --prompt='nav> '
+  )"
+
+  [[ -n "$target" ]] && cd "$target"
+}
+
+# Jump to common config directories quickly.
+cconf() {
+  local target
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf is not installed."
+    return 1
+  fi
+
+  target="$(
+    printf '%s\n' \
+      "$HOME/.config" \
+      "$HOME/.ssh" \
+      "$HOME/.local/share" \
+      "$HOME/Sources/dotfiles" \
+      "$HOME/Sources/dotfiles/nvim" \
+      "$HOME/Sources/dotfiles/tmux" \
+      "$HOME/Sources/dotfiles/zsh" |
+      while IFS= read -r dir; do
+        [[ -d "$dir" ]] && printf '%s\n' "$dir"
+      done |
+      fzf --height=40% --reverse --prompt='cconf> '
+  )"
+
+  [[ -n "$target" ]] && cd "$target"
+}
+
+# Show listening ports with owning process in a compact view.
+ports() {
+  if command -v ss >/dev/null 2>&1; then
+    ss -tulpn
+    return
+  fi
+
+  if command -v lsof >/dev/null 2>&1; then
+    lsof -i -P -n | grep LISTEN
+    return
+  fi
+
+  echo "Neither ss nor lsof is available."
+  return 1
+}
+
+# Print local and public IP quickly.
+myip() {
+  local local_ip
+
+  local_ip="$(hostname -I 2>/dev/null | awk '{print $1}')"
+  if [[ -n "$local_ip" ]]; then
+    echo "Local: $local_ip"
+  else
+    echo "Local: unavailable"
+  fi
+
+  if command -v curl >/dev/null 2>&1; then
+    echo "Public: $(curl -fsS https://api.ipify.org 2>/dev/null || echo unavailable)"
+  else
+    echo "Public: curl not installed"
+  fi
 }
 
 # Unpack common archive formats without remembering the exact tool flags.
