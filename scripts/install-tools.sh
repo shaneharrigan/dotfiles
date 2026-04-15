@@ -13,7 +13,7 @@ Examples:
   ./scripts/install-tools.sh fzf zoxide
 
 Supported tools:
-  bat clipboard direnv eza fd fzf ripgrep wl-clipboard xclip xsel zoxide
+  bat clipboard direnv eza fd fzf ripgrep stow wl-clipboard xclip xsel zoxide
 EOF
 }
 
@@ -64,6 +64,8 @@ package_for() {
     apt:fd) echo fd-find ;;
     apt:fzf) echo fzf ;;
     apt:ripgrep) echo ripgrep ;;
+    brew:stow) echo stow ;;
+    apt:stow) echo stow ;;
     apt:wl-clipboard) echo wl-clipboard ;;
     apt:xclip) echo xclip ;;
     apt:xsel) echo xsel ;;
@@ -108,6 +110,7 @@ main() {
       eza
       bat
       fd
+      stow
       clipboard
     )
   fi
