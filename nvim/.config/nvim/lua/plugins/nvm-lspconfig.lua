@@ -292,7 +292,18 @@ return {
           map("n", "<leader>lq", vim.diagnostic.setloclist, "Quickfix Diagnostics")
         end,
       })
-      
+
+      -- Configure clojure-lsp for Clojure/ClojureScript
+      setup_server("clojure_lsp", {
+        capabilities = capabilities,
+        cmd = { "clojure-lsp" },
+        filetypes = { "clojure", "clojurescript", "clojurec", "edn" },
+        root_dir = function(fname)
+          return root_or_file(fname, { "project.clj", "deps.edn", ".git" })
+        end,
+        single_file_support = true,
+      })
+
       -- Configure diagnostics UI
       vim.diagnostic.config({
         virtual_text = {

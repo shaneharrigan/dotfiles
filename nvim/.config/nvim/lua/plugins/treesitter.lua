@@ -37,6 +37,8 @@ return {
           "typescript",
           "tsx",
           "python",
+          "clojure",
+          "edn",
         },
         sync_install = false,
         auto_install = true,

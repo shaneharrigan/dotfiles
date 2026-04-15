@@ -195,6 +195,8 @@ return {
           typescript = { "prettier" },
           typescriptreact = { "prettier" },
           python = { "isort", "black" },
+          clojure = { "zprint" },
+          edn = { "zprint" },
         },
         format_on_save = {
           timeout_ms = 1000,
@@ -223,6 +225,8 @@ return {
         typescript = { "eslint_d" },
         typescriptreact = { "eslint_d" },
         python = { "ruff" },
+        clojure = { "clj-kondo" },
+        edn = { "clj-kondo" },
       }
       
       -- Lint on open/save, but avoid InsertLeave so editing stays snappy.
