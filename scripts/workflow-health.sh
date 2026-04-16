@@ -10,6 +10,7 @@ TOOLS=(
   rg
   fzf
   fd
+  lazydocker
   bat
   eza
   zoxide

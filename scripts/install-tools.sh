@@ -13,7 +13,7 @@ Examples:
   ./scripts/install-tools.sh fzf zoxide
 
 Supported tools:
-  bat clipboard direnv eza fd fzf ripgrep stow wl-clipboard xclip xsel zoxide
+  bat clipboard direnv eza fd fzf lazydocker ripgrep stow wl-clipboard xclip xsel zoxide
 EOF
 }
 
@@ -52,6 +52,7 @@ package_for() {
     brew:eza) echo eza ;;
     brew:fd) echo fd ;;
     brew:fzf) echo fzf ;;
+    brew:lazydocker) echo lazydocker ;;
     brew:ripgrep) echo ripgrep ;;
     brew:wl-clipboard) echo xclip ;;
     brew:xclip) echo xclip ;;
@@ -63,6 +64,11 @@ package_for() {
     apt:eza) echo eza ;;
     apt:fd) echo fd-find ;;
     apt:fzf) echo fzf ;;
+    apt:lazydocker)
+      echo "Unsupported tool for apt installs: lazydocker" >&2
+      echo "Install Homebrew first or install lazydocker manually, then rerun the shell bootstrap." >&2
+      exit 1
+      ;;
     apt:ripgrep) echo ripgrep ;;
     brew:stow) echo stow ;;
     apt:stow) echo stow ;;
@@ -92,19 +98,23 @@ ensure_fzf_extras() {
 
 main() {
   local manager
+  local explicit_request=0
   local requested_tools=()
   local packages=()
+  local filtered_tools=()
   local tool
   local package
 
   manager="$(pick_package_manager)"
 
   if [[ $# -gt 0 ]]; then
+    explicit_request=1
     requested_tools=("$@")
   else
     requested_tools=(
       ripgrep
       fzf
+      lazydocker
       zoxide
       direnv
       eza
@@ -115,12 +125,29 @@ main() {
     )
   fi
 
+  if [[ "$manager" == "apt" ]]; then
+    for tool in "${requested_tools[@]}"; do
+      if [[ "$tool" == "lazydocker" ]]; then
+        if [[ "$explicit_request" -eq 1 ]]; then
+          echo "lazydocker is not managed through apt in this script." >&2
+          echo "Install Homebrew first or install lazydocker manually, then rerun the shell bootstrap." >&2
+          exit 1
+        fi
+        echo "Skipping lazydocker for apt installs. Install it manually or use Homebrew if you want it managed here."
+        continue
+      fi
+      filtered_tools+=("$tool")
+    done
+    requested_tools=("${filtered_tools[@]}")
+  fi
+
   for tool in "${requested_tools[@]}"; do
     package="$(package_for "$manager" "$tool")"
     packages+=("$package")
   done
 
   echo "Using package manager: $manager"
+
   echo "Installing: ${requested_tools[*]}"
 
   if [[ "$manager" == "brew" && " ${requested_tools[*]} " == *" clipboard "* ]]; then

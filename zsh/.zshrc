@@ -80,6 +80,38 @@ fi
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(git)
 
+# Some package managers ship completion directories with dangling symlinks
+# (for example Docker Desktop inside WSL). Filter those out before compinit
+# reads a stale dump that points at missing files.
+_prune_broken_completion_dirs() {
+  local dir
+  local entry
+  local -a cleaned_fpath
+  local removed_any=0
+
+  for dir in "${fpath[@]}"; do
+    [[ -d "$dir" ]] || continue
+
+    for entry in "$dir"/_*(N); do
+      if [[ -L "$entry" && ! -e "$entry" ]]; then
+        removed_any=1
+        dir=""
+        break
+      fi
+    done
+
+    [[ -n "$dir" ]] && cleaned_fpath+=("$dir")
+  done
+
+  if (( removed_any )); then
+    fpath=("${cleaned_fpath[@]}")
+    rm -f "$HOME"/.zcompdump(N) "$HOME"/.zcompdump-*(N) "$HOME"/.zcompdump-*.zwc(N) 2>/dev/null
+  fi
+}
+
+_prune_broken_completion_dirs
+unset -f _prune_broken_completion_dirs
+
 source $ZSH/oh-my-zsh.sh
 
 # Load optional zsh overlays shipped as separate stow packages.
@@ -212,6 +244,25 @@ alias ts='tmux new-session -A -s main'
 alias tn='tmux new -s main'
 alias tls='tmux ls'
 
+# Docker and lazydocker helpers
+alias d='docker'
+alias dc='docker compose'
+alias dctx='docker context ls'
+alias dps='docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"'
+alias dpa='docker ps -a --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"'
+alias di='docker images'
+alias dv='docker volume ls'
+alias dn='docker network ls'
+alias dcs='docker compose ps'
+alias dcu='docker compose up -d'
+alias dcd='docker compose down'
+alias dcr='docker compose restart'
+alias dcb='docker compose build'
+alias dcpull='docker compose pull'
+alias dcl='docker compose logs --tail=100'
+alias dclf='docker compose logs -f --tail=100'
+alias dcsv='docker compose config --services'
+
 # Functions
 # Use bat as a cat replacement when available; fall back to coreutils cat.
 unalias cat 2>/dev/null
@@ -226,6 +277,112 @@ cat() {
 
 mkcd() {
   mkdir -p "$1" && cd "$1"
+}
+
+_need_lazydocker() {
+  if ! command -v lazydocker >/dev/null 2>&1; then
+    echo "lazydocker is not installed or not on PATH."
+    return 1
+  fi
+}
+
+# Walk up from the current directory until a Compose file is found.
+dcroot() {
+  local dir="${1:-$PWD}"
+  local -a matches
+
+  if [[ ! -d "$dir" ]]; then
+    echo "Directory not found: $dir"
+    return 1
+  fi
+
+  dir="${dir:A}"
+  while true; do
+    matches=(
+      "$dir"/compose.yml(N)
+      "$dir"/compose.yaml(N)
+      "$dir"/docker-compose*.yml(N)
+      "$dir"/docker-compose*.yaml(N)
+    )
+    [[ ${#matches[@]} -gt 0 ]] && { echo "$dir"; return 0; }
+    [[ "$dir" == "/" ]] && break
+    dir="${dir:h}"
+  done
+
+  echo "No Compose file found from ${1:-$PWD} upward."
+  return 1
+}
+
+# Jump straight to the nearest Compose project.
+cdc() {
+  local root
+
+  root="${1:-$(dcroot)}" || return 1
+  cd "$root"
+}
+
+# Open a shell inside a compose service, preferring bash when available.
+dsh() {
+  local service="$1"
+
+  if [[ -z "$service" ]]; then
+    echo "Usage: dsh <service> [command ...]"
+    return 1
+  fi
+
+  shift
+  if [[ $# -gt 0 ]]; then
+    docker compose exec "$service" "$@"
+    return
+  fi
+
+  docker compose exec "$service" sh -lc 'if command -v bash >/dev/null 2>&1; then exec bash; else exec sh; fi'
+}
+
+# Keep lazydocker on its own namespace to avoid clashing with other `ld` tools.
+lzd() {
+  _need_lazydocker || return 1
+  lazydocker "$@"
+}
+
+# Open lazydocker from the nearest Compose root so compose projects feel local.
+lzdc() {
+  local root
+
+  _need_lazydocker || return 1
+  root="${1:-$(dcroot)}" || return 1
+  (
+    cd "$root" || exit 1
+    lazydocker
+  )
+}
+
+# Pick a Docker context, preview its containers, then open lazydocker there.
+lzdctx() {
+  local context
+
+  _need_lazydocker || return 1
+
+  if [[ -n "$1" ]]; then
+    DOCKER_CONTEXT="$1" lazydocker
+    return
+  fi
+
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "Usage: lzdctx <docker-context> (or install fzf for picker mode)."
+    return 1
+  fi
+
+  context="$(
+    docker context ls --format '{{.Name}}\t{{.Current}}\t{{.Description}}' |
+      fzf --delimiter=$'\t' --with-nth=1,3 --height=40% --reverse \
+        --prompt='context> ' \
+        --preview 'docker --context {1} ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"' \
+        --preview-window=right:70%
+  )"
+
+  context="${context%%$'\t'*}"
+  [[ -n "$context" ]] && DOCKER_CONTEXT="$context" lazydocker
 }
 
 psg() {
