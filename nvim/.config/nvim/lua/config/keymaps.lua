@@ -209,7 +209,9 @@ local function show_context_hotkeys()
     "- <leader>aq: quick ask popup",
     "- <leader>aF: finish-file inline edit",
     "- <leader>am: model picker",
-    "- <leader>ar: reset chat",
+    "- <leader>as: save CopilotChat history",
+    "- <leader>aH: load CopilotChat history",
+    "- <leader>aR: reset chat",
     "- <leader>aS: stop generation",
   }
 
@@ -222,7 +224,7 @@ local function show_context_hotkeys()
     lines[#lines + 1] = "- /Review, /Fix, /Explain: prompt templates"
     lines[#lines + 1] = "- /finish-file: complete code/file endings"
     lines[#lines + 1] = "- #buffer:active: include active buffer context"
-    lines[#lines + 1] = "- $gpt-4.1: choose model inline"
+    lines[#lines + 1] = "- $auto or a model from <leader>am: choose model inline"
   end
 
   vim.lsp.util.open_floating_preview(lines, "markdown", {
@@ -266,5 +268,3 @@ vim.keymap.set("n", "<leader>gb", "<cmd>Telescope git_branches<cr>", { desc = "G
 vim.keymap.set("n", "<leader>gc", "<cmd>Telescope git_commits<cr>", { desc = "Git Commits" })
 vim.keymap.set("n", "<leader>gs", "<cmd>Telescope git_status<cr>", { desc = "Git Status" })
 vim.keymap.set("n", "<leader>gh", "<cmd>Telescope git_bcommits<cr>", { desc = "File History" })
-
-

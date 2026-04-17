@@ -583,6 +583,75 @@ gup() {
   git fetch origin --prune && git rebase "$base_ref"
 }
 
+# Update the local default branch when possible, then rebase the current branch onto it.
+gupmain() {
+  local current
+  local current_top
+  local base
+  local base_ref
+  local checked_out_path
+
+  current="$(git branch --show-current)" || return 1
+  base="${1:-$(gdefault)}" || return 1
+  base_ref="origin/$base"
+
+  git fetch origin --prune || return 1
+
+  if ! git rev-parse --verify --quiet "$base_ref" >/dev/null; then
+    base_ref="$base"
+  fi
+
+  if ! git rev-parse --verify --quiet "$base_ref" >/dev/null; then
+    echo "Base ref not found: $base" >&2
+    return 1
+  fi
+
+  if [[ "$current" == "$base" ]]; then
+    [[ "$base_ref" == "$base" ]] && return 0
+    git merge --ff-only "$base_ref"
+    return $?
+  fi
+
+  current_top="$(git rev-parse --show-toplevel)" || return 1
+  checked_out_path="$(
+    git worktree list --porcelain |
+      awk -v target="refs/heads/$base" '
+        /^worktree / { path=substr($0, 10); next }
+        /^branch / { branch=substr($0, 8); next }
+        /^$/ {
+          if (branch == target) {
+            print path
+            exit
+          }
+          path=""
+          branch=""
+        }
+        END {
+          if (branch == target) {
+            print path
+          }
+        }
+      '
+  )"
+
+  if [[ -n "$checked_out_path" && "$checked_out_path" != "$current_top" ]]; then
+    echo "$base is checked out in another worktree at $checked_out_path; rebasing onto $base_ref instead."
+    git rebase "$base_ref"
+    return $?
+  fi
+
+  if ! git show-ref --verify --quiet "refs/heads/$base"; then
+    echo "Local $base branch not found; rebasing onto $base_ref instead."
+    git rebase "$base_ref"
+    return $?
+  fi
+
+  git switch "$base" &&
+    git merge --ff-only "$base_ref" &&
+    git switch "$current" &&
+    git rebase "$base"
+}
+
 # Show the commit list and diff stat against the default branch.
 gprview() {
   local base

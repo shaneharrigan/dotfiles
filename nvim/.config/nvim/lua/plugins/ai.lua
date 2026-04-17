@@ -1,6 +1,84 @@
 local codex_path = vim.fn.exepath("codex")
 local cagent_path = vim.fn.exepath("cagent")
 local default_cli_agent = codex_path ~= "" and "codex" or (cagent_path ~= "" and "cagent" or nil)
+local copilot_chat_history_path = vim.fn.stdpath("data") .. "/copilotchat_history"
+local resolved_codecompanion_copilot_model = "gpt-4.1"
+
+local function resolve_codecompanion_copilot_model(adapter)
+  if adapter and adapter.schema and adapter.schema.model and type(adapter.schema.model.choices) == "function" then
+    local ok, choices = pcall(adapter.schema.model.choices, adapter, { async = false })
+    if ok and type(choices) == "table" and not vim.tbl_isempty(choices) then
+      local preferred_models = {
+        "gpt-4.1",
+        "gpt-4o",
+        "claude-sonnet-4.5",
+        "claude-3.7-sonnet",
+        "o4-mini",
+        "o3-mini",
+      }
+
+      for _, model in ipairs(preferred_models) do
+        if choices[model] then
+          resolved_codecompanion_copilot_model = model
+          return model
+        end
+      end
+
+      local available_models = vim.tbl_keys(choices)
+      table.sort(available_models)
+      resolved_codecompanion_copilot_model = available_models[1]
+    end
+  end
+
+  return resolved_codecompanion_copilot_model
+end
+
+local function list_copilot_chat_histories()
+  local files = vim.fn.globpath(copilot_chat_history_path, "*.json", false, true)
+  local histories = {}
+
+  for _, path in ipairs(files) do
+    histories[#histories + 1] = vim.fn.fnamemodify(path, ":t:r")
+  end
+
+  table.sort(histories, function(a, b)
+    return a > b
+  end)
+
+  return histories
+end
+
+local function save_copilot_chat_history()
+  vim.ui.input({
+    prompt = "Save Copilot chat as: ",
+    default = os.date("%Y-%m-%d-%H%M%S"),
+  }, function(input)
+    if not input or input == "" then
+      return
+    end
+
+    require("CopilotChat").save(input, copilot_chat_history_path)
+  end)
+end
+
+local function load_copilot_chat_history()
+  local histories = list_copilot_chat_histories()
+
+  if vim.tbl_isempty(histories) then
+    vim.notify("No saved Copilot chats found yet.", vim.log.levels.INFO)
+    return
+  end
+
+  vim.ui.select(histories, {
+    prompt = "Load Copilot chat history:",
+  }, function(choice)
+    if not choice or choice == "" then
+      return
+    end
+
+    require("CopilotChat").load(choice, copilot_chat_history_path)
+  end)
+end
 
 return {
   ------------------------------------------------------------------
@@ -122,6 +200,16 @@ return {
       { "<leader>aR", "<cmd>CopilotChatReset<cr>", desc = "AI Chat reset" },
       { "<leader>aS", "<cmd>CopilotChatStop<cr>", desc = "AI Chat stop" },
       {
+        "<leader>as",
+        save_copilot_chat_history,
+        desc = "AI Save chat history",
+      },
+      {
+        "<leader>aH",
+        load_copilot_chat_history,
+        desc = "AI Load chat history",
+      },
+      {
         "<leader>aq",
         function()
           vim.ui.input({ prompt = "Ask Copilot: " }, function(input)
@@ -139,10 +227,11 @@ return {
     },
     opts = {
       provider = "copilot",
-      model = "gpt-4.1",
+      model = "auto",
       auto_insert_mode = true,
       question_header = "## User ",
       answer_header = "## Copilot ",
+      history_path = copilot_chat_history_path,
       -- Wide vertical split so long streaming responses aren't clipped
       window = {
         layout = "vertical",
@@ -194,14 +283,27 @@ return {
       display = {
         action_palette = {
           provider = "telescope",
+          opts = {
+            show_preset_prompts = false,
+          },
+        },
+      },
+      adapters = {
+        http = {
+          copilot = function()
+            return require("codecompanion.adapters").extend("copilot", {
+              schema = {
+                model = {
+                  default = resolve_codecompanion_copilot_model,
+                },
+              },
+            })
+          end,
         },
       },
       interactions = {
         chat = {
-          adapter = {
-            name = "copilot",
-            model = "gpt-4.1",
-          },
+          adapter = "copilot",
           tools = {
             opts = {
               -- Load the built-in agent tool group in every chat buffer so the
@@ -242,16 +344,10 @@ Additional requirements for code edits:
           },
         },
         inline = {
-          adapter = {
-            name = "copilot",
-            model = "gpt-4.1",
-          },
+          adapter = "copilot",
         },
         cmd = {
-          adapter = {
-            name = "copilot",
-            model = "gpt-4.1",
-          },
+          adapter = "copilot",
         },
         cli = {
           agent = default_cli_agent,
