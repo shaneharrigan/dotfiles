@@ -28,6 +28,7 @@ return {
           "clangd",        -- C/C++
           "rust_analyzer", -- Rust
           "lua_ls",        -- Lua
+          "clojure_lsp",   -- Clojure/ClojureScript
         },
         automatic_installation = true,
       })
@@ -71,6 +72,11 @@ return {
           -- Rust tools
           "rust-analyzer",
           "rustfmt",
+
+          -- Clojure/ClojureScript tools
+          "clojure-lsp",
+          "clj-kondo",
+          "zprint",
           
           -- Formatters
           "stylua",

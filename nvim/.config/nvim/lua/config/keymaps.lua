@@ -141,6 +141,10 @@ vim.keymap.set("n", "K", function()
     lua = { "lua_ls" },
     c = { "clangd" },
     cpp = { "clangd" },
+    clojure = { "clojure_lsp" },
+    clojurescript = { "clojure_lsp" },
+    clojurec = { "clojure_lsp" },
+    edn = { "clojure_lsp" },
   }
 
   local candidates = candidates_by_ft[ft] or {}
@@ -225,6 +229,19 @@ local function show_context_hotkeys()
     lines[#lines + 1] = "- /finish-file: complete code/file endings"
     lines[#lines + 1] = "- #buffer:active: include active buffer context"
     lines[#lines + 1] = "- $auto or a model from <leader>am: choose model inline"
+  end
+
+  if ft == "clojure" or ft == "clojurescript" or ft == "clojurec" or ft == "edn" then
+    lines[#lines + 1] = ""
+    lines[#lines + 1] = "## Clojure"
+    lines[#lines + 1] = "- <localleader>cc: connect Conjure to nREPL"
+    lines[#lines + 1] = "- <localleader>cs: select a shadow-cljs build"
+    lines[#lines + 1] = "- <localleader>cl / <localleader>cq: open/close Conjure log"
+    lines[#lines + 1] = "- <localleader>ee: eval current form"
+    lines[#lines + 1] = "- <localleader>er: eval root form"
+    lines[#lines + 1] = "- <localleader>eb: eval buffer"
+    lines[#lines + 1] = "- <localleader>la / <localleader>lr: LSP action/rename"
+    lines[#lines + 1] = "- :Clj, :Lein, :Boot: start a REPL with vim-jack-in"
   end
 
   vim.lsp.util.open_floating_preview(lines, "markdown", {

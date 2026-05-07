@@ -12,7 +12,7 @@ Defaults:
   packages: nvim tmux zsh
 
 Optional overlays:
-  nvim-delight tmux-delight zsh-flow zsh-omz-delight
+  emacs nvim-delight tmux-delight zsh-flow zsh-omz-delight powershell
 EOF
 }
 

@@ -12,12 +12,14 @@ Defaults:
   packages: nvim tmux zsh
 
 Optional overlays:
-  nvim-delight tmux-delight zsh-flow zsh-omz-delight
+  emacs nvim-delight tmux-delight zsh-flow zsh-omz-delight powershell
 
 Examples:
   ./scripts/bootstrap.sh
   ./scripts/bootstrap.sh --skip-tools zsh tmux
   ./scripts/bootstrap.sh zsh zsh-flow zsh-omz-delight nvim nvim-delight
+  ./scripts/bootstrap.sh emacs
+  ./scripts/bootstrap.sh powershell
   ./scripts/bootstrap.sh --target "$HOME" --dry-run
 EOF
 }
@@ -55,4 +57,4 @@ fi
 "$ROOT_DIR/scripts/stow-dotfiles.sh" "${PASSTHRU_ARGS[@]}"
 
 echo
-echo "Bootstrap complete. Reload your shell with: exec zsh"
+echo "Bootstrap complete. Reload your shell to pick up the new profile."

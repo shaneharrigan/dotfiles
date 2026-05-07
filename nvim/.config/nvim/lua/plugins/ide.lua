@@ -196,6 +196,8 @@ return {
           typescriptreact = { "prettier" },
           python = { "isort", "black" },
           clojure = { "zprint" },
+          clojurescript = { "zprint" },
+          clojurec = { "zprint" },
           edn = { "zprint" },
         },
         format_on_save = {
@@ -226,6 +228,8 @@ return {
         typescriptreact = { "eslint_d" },
         python = { "ruff" },
         clojure = { "clj-kondo" },
+        clojurescript = { "clj-kondo" },
+        clojurec = { "clj-kondo" },
         edn = { "clj-kondo" },
       }
       
@@ -438,4 +442,3 @@ return {
     end,
   },
 }
-

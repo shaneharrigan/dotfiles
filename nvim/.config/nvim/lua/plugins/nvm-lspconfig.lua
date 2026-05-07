@@ -299,7 +299,15 @@ return {
         cmd = { "clojure-lsp" },
         filetypes = { "clojure", "clojurescript", "clojurec", "edn" },
         root_dir = function(fname)
-          return root_or_file(fname, { "project.clj", "deps.edn", ".git" })
+          return root_or_file(fname, {
+            "deps.edn",
+            "project.clj",
+            "bb.edn",
+            "shadow-cljs.edn",
+            "build.boot",
+            ".lsp/config.edn",
+            ".git",
+          })
         end,
         single_file_support = true,
       })
@@ -331,4 +339,3 @@ return {
     end,
   },
 }
-
