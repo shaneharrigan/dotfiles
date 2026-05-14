@@ -107,18 +107,22 @@ Supported tool names are documented by:
 ## Direnv Profiles
 
 For projects with multiple runtime environments, add a project `.envrc` that
-loads the active profile from `.direnv/profile`:
+loads the active profile from `.direnv/profile` and keeps secrets outside the
+workspace:
 
 ```sh
 profile_file=".direnv/profile"
+local_env_root="${XDG_CONFIG_HOME:-$HOME/.config}/local-env/sources"
+
 mkdir -p .direnv
+mkdir -p "$local_env_root"
 
 watch_file "$profile_file"
 
-profile="$(cat "$profile_file" 2>/dev/null || echo integration)"
+profile="$(cat "$profile_file" 2>/dev/null || echo local)"
 
 case "$profile" in
-  integration|staging|production) ;;
+  local|integration|staging|production) ;;
   *)
     echo "Unknown env profile: $profile"
     exit 1
@@ -126,15 +130,34 @@ case "$profile" in
 esac
 
 dotenv_if_exists ".env.$profile"
+dotenv_if_exists "$local_env_root/.env.local"
+
+if [[ "$profile" != "local" ]]; then
+  dotenv_if_exists "$local_env_root/.env.$profile.local"
+fi
 
 export APP_ENV="$profile"
 export DOTENV_PROFILE="$profile"
 ```
 
-Keep `.direnv/` ignored by the project. Then create files such as
-`.env.integration`, `.env.staging`, and `.env.production`, and switch with:
+Keep `.direnv/` ignored by the project. Then create non-secret defaults such as
+`.env.integration`, `.env.staging`, and `.env.production`, and put local secrets
+or machine-specific overrides in:
+
+```text
+~/.config/local-env/sources/.env.local
+~/.config/local-env/sources/.env.integration.local
+~/.config/local-env/sources/.env.staging.local
+~/.config/local-env/sources/.env.production.local
+```
+
+The `local` profile uses only the shared local override file,
+`~/.config/local-env/sources/.env.local`, plus any project-specific logic you add.
+
+Switch with:
 
 ```bash
+envuse local
 envuse staging
 envcurrent
 envprofiles

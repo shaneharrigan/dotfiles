@@ -302,26 +302,55 @@ mkcd() {
   mkdir -p "$1" && cd "$1"
 }
 
+_env_profile_root() {
+  local dir="${1:-$PWD}"
+  local -a profile_files
+
+  dir="${dir:A}"
+  while true; do
+    profile_files=("$dir"/.env.*(N))
+    if [[ -f "$dir/.envrc" && ${#profile_files[@]} -gt 0 ]]; then
+      echo "$dir"
+      return 0
+    fi
+
+    [[ "$dir" == "/" ]] && break
+    dir="${dir:h}"
+  done
+
+  echo "$PWD"
+}
+
 envprofiles() {
+  local root
   local env_file
   local profile
   local found=0
 
-  for env_file in .env.*(N); do
-    profile="${env_file#.env.}"
-    [[ "$profile" == "example" || "$profile" == "sample" || "$profile" == "local" ]] && continue
+  root="$(_env_profile_root)"
+  echo "local"
+  found=1
+
+  for env_file in "$root"/.env.*(N); do
+    profile="${env_file:t}"
+    profile="${profile#.env.}"
+    [[ "$profile" == "example" || "$profile" == "sample" || "$profile" == "local" || "$profile" == *.local || "$profile" == *.template ]] && continue
     echo "$profile"
     found=1
   done
 
   if [[ "$found" -eq 0 ]]; then
-    echo "No .env.<profile> files found in $PWD."
+    echo "No .env.<profile> files found from $PWD upward."
     return 1
   fi
 }
 
 envcurrent() {
-  local profile_file=".direnv/profile"
+  local root
+  local profile_file
+
+  root="$(_env_profile_root)"
+  profile_file="$root/.direnv/profile"
 
   if [[ -f "$profile_file" ]]; then
     cat "$profile_file"
@@ -333,8 +362,12 @@ envcurrent() {
 
 envuse() {
   local profile="$1"
-  local profile_file=".direnv/profile"
+  local root
+  local profile_file
   local env_file
+
+  root="$(_env_profile_root)"
+  profile_file="$root/.direnv/profile"
 
   if [[ -z "$profile" ]]; then
     if command -v fzf >/dev/null 2>&1; then
@@ -352,14 +385,16 @@ envuse() {
     return 1
   fi
 
-  env_file=".env.$profile"
-  if [[ ! -f "$env_file" ]]; then
-    echo "Profile file not found: $env_file"
-    envprofiles
-    return 1
+  if [[ "$profile" != "local" ]]; then
+    env_file="$root/.env.$profile"
+    if [[ ! -f "$env_file" ]]; then
+      echo "Profile file not found: $env_file"
+      envprofiles
+      return 1
+    fi
   fi
 
-  mkdir -p .direnv
+  mkdir -p "$root/.direnv"
   printf '%s\n' "$profile" > "$profile_file"
 
   if command -v direnv >/dev/null 2>&1; then
@@ -370,7 +405,10 @@ envuse() {
 }
 
 envclear() {
-  rm -f .direnv/profile
+  local root
+
+  root="$(_env_profile_root)"
+  rm -f "$root/.direnv/profile"
 
   if command -v direnv >/dev/null 2>&1; then
     direnv reload
