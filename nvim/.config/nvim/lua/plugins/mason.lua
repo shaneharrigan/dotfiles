@@ -38,6 +38,7 @@ return {
           "docker_compose_language_service", -- Docker Compose
         },
         automatic_installation = true,
+        automatic_enable = false,
       })
     end,
   },

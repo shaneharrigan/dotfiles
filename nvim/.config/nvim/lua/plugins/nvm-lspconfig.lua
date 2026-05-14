@@ -9,7 +9,7 @@ return {
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
       local function setup_server(name, opts)
-        if type(vim.lsp.config) == "function" then
+        if type(vim.lsp.config) == "function" and not opts.manual then
           local ok_config = pcall(vim.lsp.config, name, opts)
           if not ok_config then
             return false
@@ -28,12 +28,16 @@ return {
               callback = function(args)
                 local bufnr = args.buf
                 local fname = vim.api.nvim_buf_get_name(bufnr)
+                if fname == "" then
+                  return
+                end
                 local root = opts.root_dir and opts.root_dir(fname) or vim.fs.dirname(fname)
                 local start_opts = vim.tbl_deep_extend("force", {}, opts, {
                   name = name,
                   root_dir = root,
                 })
                 start_opts.filetypes = nil
+                start_opts.manual = nil
                 vim.lsp.start(start_opts, { bufnr = bufnr })
               end,
             })
@@ -51,12 +55,16 @@ return {
             callback = function(args)
               local bufnr = args.buf
               local fname = vim.api.nvim_buf_get_name(bufnr)
+              if fname == "" then
+                return
+              end
               local root = opts.root_dir and opts.root_dir(fname) or vim.fs.dirname(fname)
               local start_opts = vim.tbl_deep_extend("force", {}, opts, {
                 name = name,
                 root_dir = root,
               })
               start_opts.filetypes = nil
+              start_opts.manual = nil
               vim.lsp.start(start_opts, { bufnr = bufnr })
             end,
           })
@@ -231,9 +239,11 @@ return {
       })
 
       -- Configure Markdown language server
+      local marksman_bin = vim.fn.stdpath("data") .. "/mason/bin/marksman"
       setup_server("marksman", {
+        manual = true,
         capabilities = capabilities,
-        cmd = { "marksman", "server" },
+        cmd = { vim.fn.executable(marksman_bin) == 1 and marksman_bin or "marksman", "server" },
         filetypes = { "markdown", "markdown.mdx" },
         root_dir = function(fname)
           return root_or_file(fname, { ".marksman.toml", ".git" })
