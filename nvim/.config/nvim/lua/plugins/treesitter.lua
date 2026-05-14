@@ -31,6 +31,7 @@ return {
           "markdown_inline",
           "bash",
           "sql",
+          "dockerfile",
           "html",
           "css",
           "javascript",
@@ -107,6 +108,8 @@ return {
           },
         },
       })
+
+      vim.treesitter.language.register("bash", "zsh")
     end,
   },
   

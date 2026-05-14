@@ -99,6 +99,19 @@ vim.opt.sidescrolloff = 8
 -- Completion
 vim.opt.completeopt = "menu,menuone,noselect"
 
+vim.filetype.add({
+	filename = {
+		["compose.yml"] = "yaml.docker-compose",
+		["compose.yaml"] = "yaml.docker-compose",
+		["docker-compose.yml"] = "yaml.docker-compose",
+		["docker-compose.yaml"] = "yaml.docker-compose",
+	},
+	pattern = {
+		[".*docker%-compose.*%.yml"] = "yaml.docker-compose",
+		[".*docker%-compose.*%.yaml"] = "yaml.docker-compose",
+	},
+})
+
 -- Update time
 vim.opt.updatetime = 250
 vim.opt.timeoutlen = 300

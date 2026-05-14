@@ -20,15 +20,22 @@ return {
     config = function()
       require("mason-lspconfig").setup({
         ensure_installed = {
-          "gopls",         -- Go
-          "jdtls",         -- Java
-          "ts_ls",         -- TypeScript/React
-          "pyright",       -- Python
-          "html",          -- HTML
-          "clangd",        -- C/C++
-          "rust_analyzer", -- Rust
-          "lua_ls",        -- Lua
-          "clojure_lsp",   -- Clojure/ClojureScript
+          "gopls",                           -- Go
+          "jdtls",                           -- Java
+          "ts_ls",                           -- JavaScript/TypeScript
+          "pyright",                         -- Python
+          "html",                            -- HTML
+          "cssls",                           -- CSS
+          "clangd",                          -- C/C++
+          "rust_analyzer",                   -- Rust
+          "clojure_lsp",                     -- Clojure/ClojureScript
+          "lua_ls",                          -- Lua
+          "jsonls",                          -- JSON
+          "yamlls",                          -- YAML
+          "marksman",                        -- Markdown
+          "bashls",                          -- Bash/Zsh
+          "dockerls",                        -- Dockerfile
+          "docker_compose_language_service", -- Docker Compose
         },
         automatic_installation = true,
       })
@@ -50,11 +57,13 @@ return {
           
           -- Java tools
           "jdtls",
+          "google-java-format",
           "java-debug-adapter",
           "java-test",
 
-          -- React/TypeScript tools
+          -- JavaScript/TypeScript/HTML tools
           "typescript-language-server",
+          "css-lsp",
           "eslint_d",
 
           -- Python tools
@@ -67,6 +76,7 @@ return {
           -- C/C++ tools
           "clangd",
           "clang-format",
+          "cppcheck",
           "codelldb",        -- C/C++/Rust debugger
           
           -- Rust tools
@@ -77,9 +87,21 @@ return {
           "clojure-lsp",
           "clj-kondo",
           "zprint",
-          
-          -- Formatters
+
+          -- Shell/Docker tools
+          "bash-language-server",
+          "shfmt",
+          "shellcheck",
+          "dockerfile-language-server",
+          "docker-compose-language-service",
+          "hadolint",
+
+          -- Daily-use config/docs tools
+          "lua-language-server",
           "stylua",
+          "json-lsp",
+          "yaml-language-server",
+          "marksman",
           "prettier",
           
           -- Linters

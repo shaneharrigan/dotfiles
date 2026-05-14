@@ -188,17 +188,23 @@ return {
           rust = { "rustfmt" },
           lua = { "stylua" },
           json = { "prettier" },
+          jsonc = { "prettier" },
           yaml = { "prettier" },
           markdown = { "prettier" },
           javascript = { "prettier" },
           javascriptreact = { "prettier" },
           typescript = { "prettier" },
           typescriptreact = { "prettier" },
+          css = { "prettier" },
+          html = { "prettier" },
           python = { "isort", "black" },
           clojure = { "zprint" },
           clojurescript = { "zprint" },
           clojurec = { "zprint" },
           edn = { "zprint" },
+          sh = { "shfmt" },
+          bash = { "shfmt" },
+          zsh = { "shfmt" },
         },
         format_on_save = {
           timeout_ms = 1000,
@@ -231,6 +237,10 @@ return {
         clojurescript = { "clj-kondo" },
         clojurec = { "clj-kondo" },
         edn = { "clj-kondo" },
+        sh = { "shellcheck" },
+        bash = { "shellcheck" },
+        zsh = { "shellcheck" },
+        dockerfile = { "hadolint" },
       }
       
       -- Lint on open/save, but avoid InsertLeave so editing stays snappy.
@@ -391,8 +401,6 @@ return {
       require("nvim-autopairs").setup({
         check_ts = true,
         ts_config = {
-          lua = { "string" },
-          javascript = { "template_string" },
           java = false,
         },
       })

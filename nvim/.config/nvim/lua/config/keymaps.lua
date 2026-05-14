@@ -136,15 +136,27 @@ vim.keymap.set("n", "K", function()
     typescript = { "ts_ls", "tsserver" },
     typescriptreact = { "ts_ls", "tsserver" },
     html = { "html" },
+    css = { "cssls" },
+    scss = { "cssls" },
+    less = { "cssls" },
     python = { "pyright" },
     go = { "gopls" },
     lua = { "lua_ls" },
+    json = { "jsonls" },
+    jsonc = { "jsonls" },
+    yaml = { "yamlls" },
+    markdown = { "marksman" },
     c = { "clangd" },
     cpp = { "clangd" },
     clojure = { "clojure_lsp" },
     clojurescript = { "clojure_lsp" },
     clojurec = { "clojure_lsp" },
     edn = { "clojure_lsp" },
+    sh = { "bashls" },
+    bash = { "bashls" },
+    zsh = { "bashls" },
+    dockerfile = { "dockerls" },
+    ["yaml.docker-compose"] = { "docker_compose_language_service" },
   }
 
   local candidates = candidates_by_ft[ft] or {}
@@ -199,37 +211,7 @@ local function show_context_hotkeys()
     "- <leader>fg: live grep",
     "- <leader>gg: lazygit",
     "- <leader>gh: file git history",
-    "",
-    "## AI Inline (manual only)",
-    "- <leader>ai: toggle inline suggestions",
-    "- <C-g>j: toggle inline suggestions",
-    "- <C-g>k: next suggestion",
-    "- <C-g>h: previous suggestion",
-    "- <C-g>l: accept suggestion",
-    "",
-    "## AI Chat",
-    "- <leader>aa: toggle chat",
-    "- <leader>ap: open chat",
-    "- <leader>aq: quick ask popup",
-    "- <leader>aF: finish-file inline edit",
-    "- <leader>am: model picker",
-    "- <leader>as: save CopilotChat history",
-    "- <leader>aH: load CopilotChat history",
-    "- <leader>aR: reset chat",
-    "- <leader>aS: stop generation",
   }
-
-  if ft == "copilot-chat" or bufname:match("copilot") then
-    lines[#lines + 1] = ""
-    lines[#lines + 1] = "## In Chat Buffer"
-    lines[#lines + 1] = "- <C-s>: submit prompt"
-    lines[#lines + 1] = "- <C-c>: close chat"
-    lines[#lines + 1] = "- <C-l>: reset chat"
-    lines[#lines + 1] = "- /Review, /Fix, /Explain: prompt templates"
-    lines[#lines + 1] = "- /finish-file: complete code/file endings"
-    lines[#lines + 1] = "- #buffer:active: include active buffer context"
-    lines[#lines + 1] = "- $auto or a model from <leader>am: choose model inline"
-  end
 
   if ft == "clojure" or ft == "clojurescript" or ft == "clojurec" or ft == "edn" then
     lines[#lines + 1] = ""

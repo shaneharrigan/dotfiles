@@ -243,19 +243,41 @@ Automatically installed via Mason:
 
 - **gopls**: Go
 - **jdtls**: Java
+- **clojure_lsp**: Clojure/ClojureScript
+- **clangd**: C/C++
+- **rust_analyzer**: Rust
+- **pyright**: Python
+- **ts_ls**: JavaScript/TypeScript
+- **html**: HTML
+- **cssls**: CSS
 - **lua_ls**: Lua
+- **jsonls**: JSON
+- **yamlls**: YAML and Docker Compose
+- **marksman**: Markdown
+- **bashls**: Bash/Zsh
+- **dockerls**: Dockerfile
 
 ### Formatters
 
 - Go: `gofumpt`, `goimports`
 - Java: `google-java-format`
 - Lua: `stylua`
-- JSON/YAML/Markdown: `prettier`
+- JavaScript/TypeScript/HTML/CSS/JSON/YAML/Markdown: `prettier`
+- Python: `isort`, `black`
+- C/C++: `clang-format`
+- Rust: `rustfmt`
+- Clojure: `zprint`
+- Shell: `shfmt`
 
 ### Linters
 
 - Go: `golangci-lint`
 - Java: `checkstyle`
+- JavaScript/TypeScript: `eslint_d`
+- Python: `ruff`
+- Clojure: `clj-kondo`
+- Shell: `shellcheck`
+- Dockerfile: `hadolint`
 
 ### Debuggers
 

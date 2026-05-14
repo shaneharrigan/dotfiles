@@ -128,7 +128,7 @@ return {
         },
       })
 
-      -- Configure lua_ls for Neovim development
+      -- Configure Lua for Neovim and config files
       setup_server("lua_ls", {
         capabilities = capabilities,
         settings = {
@@ -148,7 +148,7 @@ return {
         },
       })
 
-      -- Configure TypeScript/JavaScript/React (support ts_ls and legacy tsserver names)
+      -- Configure JavaScript/TypeScript/React (support ts_ls and legacy tsserver names)
       local ts_lsp_config = {
         capabilities = capabilities,
         cmd = { "typescript-language-server", "--stdio" },
@@ -197,6 +197,50 @@ return {
         single_file_support = true,
       })
 
+      -- Configure CSS language server
+      setup_server("cssls", {
+        capabilities = capabilities,
+        cmd = { "vscode-css-language-server", "--stdio" },
+        filetypes = { "css", "scss", "less" },
+        root_dir = function(fname)
+          return root_or_file(fname, { "package.json", ".git" })
+        end,
+        single_file_support = true,
+      })
+
+      -- Configure JSON language server
+      setup_server("jsonls", {
+        capabilities = capabilities,
+        cmd = { "vscode-json-language-server", "--stdio" },
+        filetypes = { "json", "jsonc" },
+        root_dir = function(fname)
+          return root_or_file(fname, { "package.json", ".git" })
+        end,
+        single_file_support = true,
+      })
+
+      -- Configure YAML language server
+      setup_server("yamlls", {
+        capabilities = capabilities,
+        cmd = { "yaml-language-server", "--stdio" },
+        filetypes = { "yaml" },
+        root_dir = function(fname)
+          return root_or_file(fname, { ".yamllint", ".git" })
+        end,
+        single_file_support = true,
+      })
+
+      -- Configure Markdown language server
+      setup_server("marksman", {
+        capabilities = capabilities,
+        cmd = { "marksman", "server" },
+        filetypes = { "markdown", "markdown.mdx" },
+        root_dir = function(fname)
+          return root_or_file(fname, { ".marksman.toml", ".git" })
+        end,
+        single_file_support = true,
+      })
+
       -- Configure pyright for Python
       setup_server("pyright", {
         capabilities = capabilities,
@@ -238,6 +282,39 @@ return {
       })
       
       -- Note: rust-analyzer is configured by rustaceanvim plugin
+
+      -- Configure bash-language-server for Bash/Zsh
+      setup_server("bashls", {
+        capabilities = capabilities,
+        cmd = { "bash-language-server", "start" },
+        filetypes = { "sh", "bash", "zsh" },
+        root_dir = function(fname)
+          return root_or_file(fname, { ".git" })
+        end,
+        single_file_support = true,
+      })
+
+      -- Configure Dockerfile language server
+      setup_server("dockerls", {
+        capabilities = capabilities,
+        cmd = { "docker-langserver", "--stdio" },
+        filetypes = { "dockerfile" },
+        root_dir = function(fname)
+          return root_or_file(fname, { "Dockerfile", ".git" })
+        end,
+        single_file_support = true,
+      })
+
+      -- Configure Docker Compose language server
+      setup_server("docker_compose_language_service", {
+        capabilities = capabilities,
+        cmd = { "docker-compose-langserver", "--stdio" },
+        filetypes = { "yaml.docker-compose" },
+        root_dir = function(fname)
+          return root_or_file(fname, { "docker-compose.yml", "docker-compose.yaml", "compose.yml", "compose.yaml", ".git" })
+        end,
+        single_file_support = true,
+      })
 
       ------------------------------------------------------------------
       -- LSP Keymaps and UI Configuration
