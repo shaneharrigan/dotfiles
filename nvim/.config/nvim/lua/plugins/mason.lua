@@ -76,7 +76,6 @@ return {
           -- C/C++ tools
           "clangd",
           "clang-format",
-          "cppcheck",
           "codelldb",        -- C/C++/Rust debugger
           
           -- Rust tools
