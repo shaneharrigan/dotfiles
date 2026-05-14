@@ -302,6 +302,81 @@ mkcd() {
   mkdir -p "$1" && cd "$1"
 }
 
+envprofiles() {
+  local env_file
+  local profile
+  local found=0
+
+  for env_file in .env.*(N); do
+    profile="${env_file#.env.}"
+    [[ "$profile" == "example" || "$profile" == "sample" || "$profile" == "local" ]] && continue
+    echo "$profile"
+    found=1
+  done
+
+  if [[ "$found" -eq 0 ]]; then
+    echo "No .env.<profile> files found in $PWD."
+    return 1
+  fi
+}
+
+envcurrent() {
+  local profile_file=".direnv/profile"
+
+  if [[ -f "$profile_file" ]]; then
+    cat "$profile_file"
+  else
+    echo "No direnv profile selected."
+    return 1
+  fi
+}
+
+envuse() {
+  local profile="$1"
+  local profile_file=".direnv/profile"
+  local env_file
+
+  if [[ -z "$profile" ]]; then
+    if command -v fzf >/dev/null 2>&1; then
+      profile="$(envprofiles 2>/dev/null | fzf --height=40% --reverse --prompt='env> ')" || return 1
+      [[ -n "$profile" ]] || return 0
+    else
+      echo "Usage: envuse <profile>"
+      envprofiles
+      return $?
+    fi
+  fi
+
+  if [[ "$profile" == */* || "$profile" == .* || "$profile" == *..* ]]; then
+    echo "Invalid profile name: $profile"
+    return 1
+  fi
+
+  env_file=".env.$profile"
+  if [[ ! -f "$env_file" ]]; then
+    echo "Profile file not found: $env_file"
+    envprofiles
+    return 1
+  fi
+
+  mkdir -p .direnv
+  printf '%s\n' "$profile" > "$profile_file"
+
+  if command -v direnv >/dev/null 2>&1; then
+    direnv reload
+  else
+    echo "direnv is not installed; profile saved but not loaded."
+  fi
+}
+
+envclear() {
+  rm -f .direnv/profile
+
+  if command -v direnv >/dev/null 2>&1; then
+    direnv reload
+  fi
+}
+
 _need_lazydocker() {
   if ! command -v lazydocker >/dev/null 2>&1; then
     echo "lazydocker is not installed or not on PATH."

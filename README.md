@@ -104,6 +104,46 @@ Supported tool names are documented by:
 ./scripts/install-tools.sh --help
 ```
 
+## Direnv Profiles
+
+For projects with multiple runtime environments, add a project `.envrc` that
+loads the active profile from `.direnv/profile`:
+
+```sh
+profile_file=".direnv/profile"
+mkdir -p .direnv
+
+watch_file "$profile_file"
+
+profile="$(cat "$profile_file" 2>/dev/null || echo integration)"
+
+case "$profile" in
+  integration|staging|production) ;;
+  *)
+    echo "Unknown env profile: $profile"
+    exit 1
+    ;;
+esac
+
+dotenv_if_exists ".env.$profile"
+
+export APP_ENV="$profile"
+export DOTENV_PROFILE="$profile"
+```
+
+Keep `.direnv/` ignored by the project. Then create files such as
+`.env.integration`, `.env.staging`, and `.env.production`, and switch with:
+
+```bash
+envuse staging
+envcurrent
+envprofiles
+envclear
+```
+
+Tools launched from that shell, such as `lzd`, `lzs`, `docker compose`, and
+`aws`, inherit the selected environment.
+
 ## Neovim
 
 The Neovim config uses `lazy.nvim`, Mason, LSP, Treesitter, completion, snippets,
