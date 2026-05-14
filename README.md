@@ -111,7 +111,18 @@ formatters, linters, DAP, and test integration.
 
 Language support includes Java, Clojure, Go, Rust, C/C++, Python, Bash/Zsh,
 Docker/Docker Compose, JavaScript/TypeScript, HTML/CSS, Lua, JSON, YAML,
-Markdown, TOML, Vimscript, and SQL syntax.
+Markdown, PlantUML, TOML, Vimscript, and SQL syntax.
+
+PlantUML files (`*.puml`, `*.plantuml`, `*.iuml`, `*.pu`, `*.wsd`) get
+PlantUML syntax highlighting. Install the CLI to render diagrams from Neovim:
+
+```bash
+./scripts/install-tools.sh plantuml graphviz
+```
+
+Use `:PlantumlRender` for PNG output or `:PlantumlRender svg` for SVG output.
+PlantUML buffers also map `<leader>pr` to PNG rendering and `<leader>ps` to SVG
+rendering.
 
 Java quality checks use `jdtls` diagnostics plus `checkstyle` by default. If you
 install PMD, Neovim will also run PMD for Java buffers:

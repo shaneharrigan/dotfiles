@@ -13,7 +13,7 @@ Examples:
   ./scripts/install-tools.sh fzf zoxide
 
 Supported tools:
-  bat clipboard direnv eza fd fzf lazydocker pmd ripgrep spotbugs stow wl-clipboard xclip xsel zoxide
+  bat clipboard direnv eza fd fzf graphviz lazydocker plantuml pmd ripgrep spotbugs stow wl-clipboard xclip xsel zoxide
 EOF
 }
 
@@ -52,7 +52,9 @@ package_for() {
     brew:eza) echo eza ;;
     brew:fd) echo fd ;;
     brew:fzf) echo fzf ;;
+    brew:graphviz) echo graphviz ;;
     brew:lazydocker) echo lazydocker ;;
+    brew:plantuml) echo plantuml ;;
     brew:pmd) echo pmd ;;
     brew:ripgrep) echo ripgrep ;;
     brew:spotbugs) echo spotbugs ;;
@@ -66,11 +68,13 @@ package_for() {
     apt:eza) echo eza ;;
     apt:fd) echo fd-find ;;
     apt:fzf) echo fzf ;;
+    apt:graphviz) echo graphviz ;;
     apt:lazydocker)
       echo "Unsupported tool for apt installs: lazydocker" >&2
       echo "Install Homebrew first or install lazydocker manually, then rerun the shell bootstrap." >&2
       exit 1
       ;;
+    apt:plantuml) echo plantuml ;;
     apt:pmd|apt:spotbugs)
       echo "Unsupported tool for apt installs: $tool" >&2
       echo "Install Homebrew first or install $tool manually, then rerun the shell bootstrap." >&2

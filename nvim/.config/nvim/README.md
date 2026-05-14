@@ -269,6 +269,13 @@ Automatically installed via Mason:
 - Clojure: `zprint`
 - Shell: `shfmt`
 
+### PlantUML
+
+- Filetypes: `*.puml`, `*.plantuml`, `*.iuml`, `*.pu`, `*.wsd`
+- Render PNG: `:PlantumlRender` or `<leader>pr`
+- Render SVG: `:PlantumlRender svg` or `<leader>ps`
+- CLI install: `./scripts/install-tools.sh plantuml graphviz`
+
 ### Linters
 
 - Go: `golangci-lint`
