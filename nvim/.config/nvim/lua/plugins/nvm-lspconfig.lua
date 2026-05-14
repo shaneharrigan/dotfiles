@@ -9,6 +9,22 @@ return {
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
       local function setup_server(name, opts)
+        local function start_for_buffer(bufnr)
+          local fname = vim.api.nvim_buf_get_name(bufnr)
+          if fname == "" then
+            return
+          end
+
+          local root = opts.root_dir and opts.root_dir(fname) or vim.fs.dirname(fname)
+          local start_opts = vim.tbl_deep_extend("force", {}, opts, {
+            name = name,
+            root_dir = root,
+          })
+          start_opts.filetypes = nil
+          start_opts.manual = nil
+          vim.lsp.start(start_opts, { bufnr = bufnr })
+        end
+
         if type(vim.lsp.config) == "function" and not opts.manual then
           local ok_config = pcall(vim.lsp.config, name, opts)
           if not ok_config then
@@ -26,21 +42,14 @@ return {
               group = group,
               pattern = opts.filetypes,
               callback = function(args)
-                local bufnr = args.buf
-                local fname = vim.api.nvim_buf_get_name(bufnr)
-                if fname == "" then
-                  return
-                end
-                local root = opts.root_dir and opts.root_dir(fname) or vim.fs.dirname(fname)
-                local start_opts = vim.tbl_deep_extend("force", {}, opts, {
-                  name = name,
-                  root_dir = root,
-                })
-                start_opts.filetypes = nil
-                start_opts.manual = nil
-                vim.lsp.start(start_opts, { bufnr = bufnr })
+                start_for_buffer(args.buf)
               end,
             })
+
+            if vim.tbl_contains(opts.filetypes, vim.bo.filetype) then
+              start_for_buffer(0)
+            end
+
             return true
           end
 
@@ -53,21 +62,14 @@ return {
             group = group,
             pattern = opts.filetypes,
             callback = function(args)
-              local bufnr = args.buf
-              local fname = vim.api.nvim_buf_get_name(bufnr)
-              if fname == "" then
-                return
-              end
-              local root = opts.root_dir and opts.root_dir(fname) or vim.fs.dirname(fname)
-              local start_opts = vim.tbl_deep_extend("force", {}, opts, {
-                name = name,
-                root_dir = root,
-              })
-              start_opts.filetypes = nil
-              start_opts.manual = nil
-              vim.lsp.start(start_opts, { bufnr = bufnr })
+              start_for_buffer(args.buf)
             end,
           })
+
+          if vim.tbl_contains(opts.filetypes, vim.bo.filetype) then
+            start_for_buffer(0)
+          end
+
           return true
         end
 
@@ -252,13 +254,26 @@ return {
       })
 
       -- Configure pyright for Python
+      local pyright_bin = vim.fn.stdpath("data") .. "/mason/bin/pyright-langserver"
       setup_server("pyright", {
+        manual = true,
         capabilities = capabilities,
-        cmd = { "pyright-langserver", "--stdio" },
+        cmd = { vim.fn.executable(pyright_bin) == 1 and pyright_bin or "pyright-langserver", "--stdio" },
+        filetypes = { "python" },
         root_dir = function(fname)
-          return root_or_file(fname, { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git" })
+          return root_or_file(fname, { "pyrightconfig.json", "pyproject.toml", "uv.lock", "setup.py", "setup.cfg", "requirements.txt", ".git" })
         end,
         single_file_support = true,
+        before_init = function(_, config)
+          local root = config.root_dir
+          if root and vim.fn.executable(root .. "/.venv/bin/python") == 1 then
+            config.settings = vim.tbl_deep_extend("force", config.settings or {}, {
+              python = {
+                pythonPath = root .. "/.venv/bin/python",
+              },
+            })
+          end
+        end,
         settings = {
           python = {
             analysis = {

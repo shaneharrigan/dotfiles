@@ -20,6 +20,15 @@ vim.opt.rtp:prepend(lazypath)
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
+local function prepend_path(path)
+	if vim.fn.isdirectory(path) == 1 and not vim.env.PATH:find(path, 1, true) then
+		vim.env.PATH = path .. ":" .. vim.env.PATH
+	end
+end
+
+prepend_path("/home/linuxbrew/.linuxbrew/bin")
+prepend_path(vim.fn.stdpath("data") .. "/mason/bin")
+
 ------------------------------------------------------------------
 -- Editor Options
 ------------------------------------------------------------------
