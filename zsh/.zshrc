@@ -2,8 +2,8 @@ setopt AUTO_PUSHD
 setopt PUSHD_IGNORE_DUPS
 setopt PUSHD_SILENT
 DIRSTACKSIZE=20
-# If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
+# User-local binaries, including tools installed through `go install`.
+export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
 
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
@@ -309,6 +309,13 @@ _need_lazydocker() {
   fi
 }
 
+_need_lazysql() {
+  if ! command -v lazysql >/dev/null 2>&1; then
+    echo "lazysql is not installed or not on PATH."
+    return 1
+  fi
+}
+
 # Walk up from the current directory until a Compose file is found.
 dcroot() {
   local dir="${1:-$PWD}"
@@ -366,6 +373,12 @@ dsh() {
 lzd() {
   _need_lazydocker || return 1
   lazydocker "$@"
+}
+
+# Keep lazysql next to the lazydocker shortcut for the same lazy-tool rhythm.
+lzs() {
+  _need_lazysql || return 1
+  lazysql "$@"
 }
 
 # Open lazydocker from the nearest Compose root so compose projects feel local.

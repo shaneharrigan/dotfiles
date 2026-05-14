@@ -11,6 +11,7 @@ TOOLS=(
   fzf
   fd
   lazydocker
+  lazysql
   bat
   eza
   zoxide

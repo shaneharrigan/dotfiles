@@ -17,6 +17,7 @@ pretty_command() {
       ;;
     lazydocker) printf 'LazyDocker' ;;
     lazygit) printf 'LazyGit' ;;
+    lazysql) printf 'LazySQL' ;;
     nvim) printf 'Neovim' ;;
     vim) printf 'Vim' ;;
     *)
