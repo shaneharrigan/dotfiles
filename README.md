@@ -113,6 +113,16 @@ Language support includes Java, Clojure, Go, Rust, C/C++, Python, Bash/Zsh,
 Docker/Docker Compose, JavaScript/TypeScript, HTML/CSS, Lua, JSON, YAML,
 Markdown, TOML, Vimscript, and SQL syntax.
 
+Java quality checks use `jdtls` diagnostics plus `checkstyle` by default. If you
+install PMD, Neovim will also run PMD for Java buffers:
+
+```bash
+./scripts/install-tools.sh pmd spotbugs
+```
+
+`spotbugs` is installed as a project/build tool rather than an on-save editor
+linter because it analyzes compiled Java bytecode.
+
 The LSP servers can provide snippet-style completions when a language server
 supports them. `nvim-cmp` and `LuaSnip` are already configured to expand those
 snippets, and `friendly-snippets` adds a broad set of editor-side snippets for

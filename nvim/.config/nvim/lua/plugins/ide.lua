@@ -222,10 +222,16 @@ return {
     event = { "BufReadPre", "BufNewFile" },
     config = function()
       local lint = require("lint")
+      local java_linters = { "checkstyle" }
+
+      -- PMD is optional because Mason does not currently package it.
+      if vim.fn.executable("pmd") == 1 then
+        table.insert(java_linters, "pmd")
+      end
       
       lint.linters_by_ft = {
         go = { "golangcilint" },
-        java = { "checkstyle" },
+        java = java_linters,
         c = { "cppcheck" },
         cpp = { "cppcheck" },
         javascript = { "eslint_d" },

@@ -272,12 +272,15 @@ Automatically installed via Mason:
 ### Linters
 
 - Go: `golangci-lint`
-- Java: `checkstyle`
+- Java: `checkstyle`, optional `pmd`
 - JavaScript/TypeScript: `eslint_d`
 - Python: `ruff`
 - Clojure: `clj-kondo`
 - Shell: `shellcheck`
 - Dockerfile: `hadolint`
+
+PMD is enabled automatically when a `pmd` executable is available. SpotBugs is
+best run through project build tooling because it analyzes compiled bytecode.
 
 ### Debuggers
 

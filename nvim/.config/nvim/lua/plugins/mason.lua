@@ -107,8 +107,6 @@ return {
           "golangci-lint",
           "checkstyle",
 
-          -- SonarLint diagnostics
-          "sonarlint-language-server",
         },
         auto_update = true,
         run_on_start = true,
