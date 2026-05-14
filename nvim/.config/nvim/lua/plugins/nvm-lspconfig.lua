@@ -368,8 +368,18 @@ return {
           map("n", "<C-k>", vim.lsp.buf.signature_help, "Signature Help")
           map("i", "<C-k>", vim.lsp.buf.signature_help, "Signature Help")
           map("n", "<leader>rn", vim.lsp.buf.rename, "Rename")
-          map("n", "<leader>ca", vim.lsp.buf.code_action, "Code Action")
-          map("v", "<leader>ca", vim.lsp.buf.code_action, "Code Action")
+          local function code_action()
+            local ok, actions_preview = pcall(require, "actions-preview")
+            if ok then
+              actions_preview.code_actions()
+              return
+            end
+
+            vim.lsp.buf.code_action()
+          end
+
+          map("n", "<leader>ca", code_action, "Code Action")
+          map("v", "<leader>ca", code_action, "Code Action")
           map("n", "<leader>lf", function()
             vim.lsp.buf.format({ async = true })
           end, "Format Buffer")
